@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ছাত্র তথ্য - কল্যাণপুর মাদ্রাসা</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+      color: #222;
+    }
+
+    header {
+      background: #0b6b4f;
+      color: white;
+      padding: 25px 15px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .search-box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #0b6b4f;
+      color: white;
+      font-size: 16px;
+    }
+
+    .student {
+      background: white;
+      padding: 18px;
+      margin-top: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .student h3 {
+      color: #0b6b4f;
+      margin-top: 0;
+    }
+
+    .back {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>কল্যাণপুর এমদাদুল উলুম কওমী মাদ্রাসা</h1>
+  <p>ছাত্র তথ্য অনুসন্ধান</p>
+</header>
+
+<div class="container">
+
+  <div class="search-box">
+    <h2>🔍 ছাত্র খুঁজুন</h2>
+
+    <input
+      type="text"
+      id="search"
+      placeholder="রোল নম্বর বা ছাত্রের নাম লিখুন"
+      onkeyup="searchStudent()"
+    >
+  </div>
+
+  <div id="result">
+
+    <div class="student">
+      <h3>👨‍🎓 ছাত্র তথ্য</h3>
+      <p>এখানে ছাত্রের নাম, রোল, শ্রেণি ও অন্যান্য তথ্য দেখা যাবে।</p>
+      <p><strong>নোট:</strong> আমরা পরের ধাপে আসল ছাত্রদের তথ্য যোগ করব।</p>
+    </div>
+
+  </div>
+
+  <button class="back" onclick="history.back()">⬅️ ফিরে যান</button>
+
+</div>
+
+<script>
+function searchStudent() {
+  let search = document.getElementById("search").value.toLowerCase();
+
+  if (search.length > 0) {
+    document.getElementById("result").innerHTML =
+      "<div class='student'>" +
+      "<h3>🔎 অনুসন্ধান</h3>" +
+      "<p>আপনি খুঁজছেন: <strong>" + search + "</strong></p>" +
+      "<p>আসল ছাত্রদের তথ্য আমরা পরের ধাপে যুক্ত করব।</p>" +
+      "</div>";
+  } else {
+    document.getElementById("result").innerHTML =
+      "<div class='student'>" +
+      "<h3>👨‍🎓 ছাত্র তথ্য</h3>" +
+      "<p>এখানে ছাত্রের তথ্য দেখা যাবে।</p>" +
+      "</div>";
+  }
+}
+</script>
+
+</body>
+</html>
