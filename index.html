@@ -1,261 +1,736 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>কল্যাণপুর এমদাদুল উলুম মাদ্রাসা</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>কল্যাণপুর মাদ্রাসা — ব্যবস্থাপনা সফটওয়্যার</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      background: #f4f7fb;
-      color: #172033;
-    }
-
-    header {
-      background: #0d3b66;
-      color: white;
-      padding: 25px 15px;
-      text-align: center;
-    }
-
-    header h1 {
-      font-size: 25px;
-      margin-bottom: 8px;
-    }
-
-    header p {
-      font-size: 15px;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .welcome {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    }
-
-    .welcome h2 {
-      color: #0d3b66;
-      margin-bottom: 10px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-    }
-
-    .card {
-      background: white;
-      padding: 22px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    }
-
-    .card .icon {
-      font-size: 35px;
-      margin-bottom: 10px;
-    }
-
-    .card h3 {
-      font-size: 18px;
-      margin-bottom: 7px;
-      color: #0d3b66;
-    }
-
-    .card p {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .sections {
-      margin-top: 25px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-    }
-
-    .section {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    }
-
-    .section h3 {
-      color: #0d3b66;
-      margin-bottom: 12px;
-    }
-
-    .section ul {
-      list-style: none;
-    }
-
-    .section li {
-      padding: 9px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    footer {
-      margin-top: 30px;
-      background: #0d3b66;
-      color: white;
-      text-align: center;
-      padding: 20px;
-      font-size: 14px;
-    }
-  </style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,"Noto Sans Bengali",sans-serif;
+  background:#f3f7fb;color:#172033;
+}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.header{
+  background:linear-gradient(135deg,#075e54,#087f5b);
+  color:white;padding:22px 16px;text-align:center;
+  box-shadow:0 3px 15px #0002;
+}
+.header h1{font-size:25px;margin-bottom:7px}
+.header p{font-size:14px;opacity:.9}
+.wrap{max-width:1200px;margin:auto;padding:18px}
+.welcome{
+  background:white;border-radius:18px;padding:20px;margin-bottom:18px;
+  box-shadow:0 4px 15px #00000012;
+}
+.welcome h2{color:#075e54;margin-bottom:7px}
+.stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:13px;margin-bottom:20px;
+}
+.stat{
+  background:white;border-radius:17px;padding:18px;text-align:center;
+  box-shadow:0 4px 15px #00000012;border-top:4px solid #087f5b;
+}
+.stat .ico{font-size:30px}
+.stat h3{font-size:24px;color:#075e54;margin:5px}
+.stat p{font-size:13px;color:#666}
+.menu{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:12px;margin-bottom:20px;
+}
+.menu button{
+  border:0;border-radius:16px;background:white;padding:20px 10px;
+  box-shadow:0 4px 14px #00000012;color:#075e54;font-size:15px;
+  transition:.2s;
+}
+.menu button:hover{transform:translateY(-2px);background:#e8f7f1}
+.menu .big{font-size:30px;display:block;margin-bottom:8px}
+.panel{
+  background:white;border-radius:18px;padding:20px;
+  box-shadow:0 4px 15px #00000012;margin-bottom:20px;
+}
+.panel h2{color:#075e54;margin-bottom:16px}
+.hidden{display:none!important}
+.formgrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:12px;
+}
+.field label{display:block;font-size:13px;margin-bottom:5px;color:#555}
+.field input,.field select,.field textarea{
+  width:100%;padding:11px;border:1px solid #d8dee7;
+  border-radius:10px;outline:none;background:#fff;
+}
+.field textarea{min-height:80px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.btn{
+  border:0;border-radius:10px;padding:11px 18px;
+  background:#087f5b;color:white;font-size:14px;
+}
+.btn.secondary{background:#e8f7f1;color:#075e54}
+.btn.danger{background:#c62828}
+.search{
+  width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;
+  margin-bottom:12px;
+}
+.tablebox{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:750px}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:right;font-size:13px}
+th{background:#e8f7f1;color:#075e54}
+.badge{
+  display:inline-block;padding:5px 9px;border-radius:20px;
+  background:#e8f7f1;color:#075e54;font-size:12px;
+}
+.cards2{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px
+}
+.info{
+  background:#f7faf9;border-radius:14px;padding:16px;border-right:4px solid #087f5b
+}
+.info h3{color:#075e54;margin-bottom:8px}
+.notice{
+  border-bottom:1px solid #eee;padding:13px 0
+}
+.notice:last-child{border-bottom:0}
+footer{
+  text-align:center;background:#075e54;color:white;padding:18px;
+  margin-top:25px;font-size:13px
+}
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#172033;color:white;padding:12px 18px;border-radius:10px;
+  display:none;z-index:9999
+}
+@media(max-width:600px){
+ .header h1{font-size:20px}
+ .wrap{padding:10px}
+ .panel{padding:14px}
+}
+</style>
 </head>
 
 <body>
-<!-- প্রধান মেনু -->
-<div style="padding:20px; text-align:center;">
 
-  <h2>মাদ্রাসা ব্যবস্থাপনা</h2>
+<header class="header">
+  <h1>কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা</h1>
+  <p>ডিজিটাল মাদ্রাসা ব্যবস্থাপনা সফটওয়্যার • স্থাপিত ১৯৯৬</p>
+</header>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+<div class="wrap">
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      👨‍🎓 ছাত্র তালিকা
-    </button>
+<div class="welcome">
+  <h2>আসসালামু আলাইকুম 👋</h2>
+  <p>মাদ্রাসার সম্পূর্ণ ব্যবস্থাপনা এক জায়গা থেকে পরিচালনা করুন।</p>
+</div>
 
-    <a href="students.html">🔍 ছাত্র খুঁজুন</a>
-    
-  
+<div class="stats">
+  <div class="stat"><div class="ico">👨‍🎓</div><h3 id="studentCount">০</h3><p>মোট ছাত্র</p></div>
+  <div class="stat"><div class="ico">👨‍🏫</div><h3 id="teacherCount">০</h3><p>মোট শিক্ষক</p></div>
+  <div class="stat"><div class="ico">💰</div><h3>৳ ০</h3><p>এই মাসের আদায়</p></div>
+  <div class="stat"><div class="ico">📅</div><h3>০%</h3><p>আজকের উপস্থিতি</p></div>
+</div>
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      📝 ভর্তি তথ্য
-    </button>
+<div class="menu">
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      💰 বেতন / ফি
-    </button>
+<button onclick="showPanel('students')">
+<span class="big">👨‍🎓</span>ছাত্র ব্যবস্থাপনা
+</button>
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      📊 ফলাফল
-    </button>
+<button onclick="showPanel('addStudent')">
+<span class="big">➕</span>ছাত্র ভর্তি
+</button>
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      📅 উপস্থিতি
-    </button>
+<button onclick="showPanel('fees')">
+<span class="big">💰</span>বেতন / ফি
+</button>
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      👨‍🏫 শিক্ষক
-    </button>
+<button onclick="showPanel('attendance')">
+<span class="big">📅</span>উপস্থিতি
+</button>
 
-    <button style="padding:18px; font-size:16px; border:0; border-radius:12px;">
-      📢 নোটিশ
-    </button>
+<button onclick="showPanel('results')">
+<span class="big">📊</span>পরীক্ষার ফলাফল
+</button>
 
-  </div>
+<button onclick="showPanel('teachers')">
+<span class="big">👨‍🏫</span>শিক্ষক
+</button>
+
+<button onclick="showPanel('accounts')">
+<span class="big">💵</span>আয়-ব্যয়
+</button>
+
+<button onclick="showPanel('notices')">
+<span class="big">📢</span>নোটিশ
+</button>
+
+<button onclick="showPanel('settings')">
+<span class="big">⚙️</span>সেটিংস
+</button>
 
 </div>
-  <header>
-    <h1>কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা</h1>
-    <p>স্থাপিত: ১৯৯৬ ইং | মাদ্রাসা ব্যবস্থাপনা সিস্টেম</p>
-  </header>
 
-  <div class="container">
+<!-- ছাত্র তালিকা -->
+<section id="students" class="panel hidden">
+<h2>👨‍🎓 ছাত্র তালিকা</h2>
 
-    <div class="welcome">
-      <h2>আসসালামু আলাইকুম</h2>
-      <p>
-        কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসার
-        ডিজিটাল ব্যবস্থাপনা সিস্টেমে আপনাকে স্বাগতম।
-      </p>
-    </div>
+<input class="search" id="studentSearch"
+placeholder="নাম, রোল বা ভর্তি নম্বর দিয়ে খুঁজুন..."
+oninput="filterStudents()">
 
-    <div class="cards">
+<div class="tablebox">
+<table>
+<thead>
+<tr>
+<th>ক্রম</th>
+<th>নাম</th>
+<th>রোল</th>
+<th>ভর্তি নম্বর</th>
+<th>শ্রেণি</th>
+<th>বিভাগ</th>
+<th>মোবাইল</th>
+<th>স্ট্যাটাস</th>
+</tr>
+</thead>
+<tbody id="studentTable">
+<tr><td colspan="8" style="text-align:center">ছাত্রের তথ্য লোড হচ্ছে...</td></tr>
+</tbody>
+</table>
+</div>
+</section>
 
-      <div class="card">
-        <div class="icon">👨‍🎓</div>
-        <h3>ছাত্র</h3>
-        <p>৫০+ জন</p>
-      </div>
+<!-- ছাত্র যোগ -->
+<section id="addStudent" class="panel hidden">
+<h2>➕ নতুন ছাত্র ভর্তি</h2>
 
-      <div class="card">
-        <div class="icon">👨‍🏫</div>
-        <h3>শিক্ষক</h3>
-        <p>৫ জন</p>
-      </div>
+<div class="formgrid">
 
-      <div class="card">
-        <div class="icon">👨‍🍳</div>
-        <h3>কর্মচারী</h3>
-        <p>১ জন বাবুর্চি</p>
-      </div>
+<div class="field">
+<label>ছাত্রের নাম *</label>
+<input id="s_name" placeholder="পূর্ণ নাম">
+</div>
 
-      <div class="card">
-        <div class="icon">📚</div>
-        <h3>বিভাগ</h3>
-        <p>নূরানী, হিফজ, কিতাব ও মক্তব</p>
-      </div>
+<div class="field">
+<label>রোল নম্বর</label>
+<input id="s_roll" placeholder="রোল">
+</div>
 
-    </div>
+<div class="field">
+<label>ভর্তি নম্বর</label>
+<input id="s_admission" placeholder="ভর্তি নম্বর">
+</div>
 
-    <div class="sections">
+<div class="field">
+<label>শ্রেণি</label>
+<select id="s_class">
+<option>নূরানী</option>
+<option>নার্সারি</option>
+<option>১ম শ্রেণি</option>
+<option>২য় শ্রেণি</option>
+<option>৩য় শ্রেণি</option>
+<option>৪র্থ শ্রেণি</option>
+<option>৫ম শ্রেণি</option>
+<option>মক্তব</option>
+<option>হিফজ</option>
+<option>কিতাব বিভাগ</option>
+</select>
+</div>
 
-      <div class="section">
-        <h3>📚 শিক্ষা বিভাগ</h3>
-        <ul>
-          <li>নূরানী বিভাগ</li>
-          <li>মক্তব বিভাগ</li>
-          <li>হিফজ বিভাগ</li>
-          <li>কিতাব বিভাগ — মিজান পর্যন্ত</li>
-        </ul>
-      </div>
+<div class="field">
+<label>বিভাগ</label>
+<select id="s_department">
+<option>নূরানী</option>
+<option>মক্তব</option>
+<option>হিফজ</option>
+<option>কিতাব</option>
+</select>
+</div>
 
-      <div class="section">
-        <h3>🏠 আবাসন ব্যবস্থা</h3>
-        <ul>
-          <li>আবাসিক</li>
-          <li>অনাবাসিক</li>
-          <li>ডে-কেয়ার</li>
-        </ul>
-      </div>
+<div class="field">
+<label>শাখা / সেকশন</label>
+<input id="s_section" placeholder="শাখা">
+</div>
 
-      <div class="section">
-        <h3>⚙️ ব্যবস্থাপনা</h3>
-        <ul>
-          <li>👨‍🎓 ছাত্র ব্যবস্থাপনা</li>
-          <li>📅 উপস্থিতি</li>
-          <li>💰 বেতন ও হিসাব</li>
-          <li>📝 পরীক্ষা ও ফলাফল</li>
-        </ul>
-      </div>
+<div class="field">
+<label>লিঙ্গ</label>
+<select id="s_gender">
+<option>ছেলে</option>
+<option>মেয়ে</option>
+</select>
+</div>
 
-      <div class="section">
-        <h3>📢 অন্যান্য</h3>
-        <ul>
-          <li>👨‍🏫 শিক্ষক তথ্য</li>
-          <li>📢 নোটিশ</li>
-          <li>📊 রিপোর্ট</li>
-          <li>⚙️ সেটিংস</li>
-        </ul>
-      </div>
+<div class="field">
+<label>জন্ম তারিখ</label>
+<input id="s_dob" type="date">
+</div>
 
-    </div>
+<div class="field">
+<label>পিতার নাম</label>
+<input id="s_father">
+</div>
 
-  </div>
+<div class="field">
+<label>মাতার নাম</label>
+<input id="s_mother">
+</div>
 
-  <footer>
-    © ১৯৯৬–২০২৬ কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
-  </footer>
+<div class="field">
+<label>মোবাইল নম্বর</label>
+<input id="s_phone">
+</div>
+
+<div class="field">
+<label>রক্তের গ্রুপ</label>
+<select id="s_blood">
+<option>জানা নেই</option>
+<option>A+</option><option>A-</option>
+<option>B+</option><option>B-</option>
+<option>O+</option><option>O-</option>
+<option>AB+</option><option>AB-</option>
+</select>
+</div>
+
+<div class="field">
+<label>ভর্তি তারিখ</label>
+<input id="s_admission_date" type="date">
+</div>
+
+<div class="field">
+<label>আবাসন</label>
+<select id="s_residence">
+<option>আবাসিক</option>
+<option>অনাবাসিক</option>
+<option>ডে-কেয়ার</option>
+</select>
+</div>
+
+<div class="field">
+<label>স্ট্যাটাস</label>
+<select id="s_status">
+<option>সক্রিয়</option>
+<option>নিষ্ক্রিয়</option>
+</select>
+</div>
+
+<div class="field" style="grid-column:1/-1">
+<label>বর্তমান ঠিকানা</label>
+<textarea id="s_address"></textarea>
+</div>
+
+</div>
+
+<div class="actions">
+<button class="btn" onclick="addStudent()">💾 ছাত্র সংরক্ষণ</button>
+<button class="btn secondary" onclick="clearStudentForm()">পরিষ্কার</button>
+</div>
+</section>
+
+<!-- ফি -->
+<section id="fees" class="panel hidden">
+<h2>💰 বেতন ও ফি ব্যবস্থাপনা</h2>
+<div class="cards2">
+<div class="info"><h3>মাসিক বেতন</h3><p>ছাত্রভেদে ফি নির্ধারণ ও জমা নেওয়া যাবে।</p></div>
+<div class="info"><h3>বকেয়া</h3><p>কোন ছাত্রের কত টাকা বাকি তা দেখা যাবে।</p></div>
+<div class="info"><h3>রসিদ</h3><p>পেমেন্টের রসিদ তৈরি ও প্রিন্টের ব্যবস্থা থাকবে।</p></div>
+</div>
+<div class="actions">
+<button class="btn" onclick="toast('বেতন মডিউল প্রস্তুত করা হয়েছে')">💳 নতুন পেমেন্ট</button>
+<button class="btn secondary" onclick="toast('বকেয়া রিপোর্ট প্রস্তুত করা হবে')">📋 বকেয়া রিপোর্ট</button>
+</div>
+</section>
+
+<!-- উপস্থিতি -->
+<section id="attendance" class="panel hidden">
+<h2>📅 উপস্থিতি ব্যবস্থাপনা</h2>
+<div class="formgrid">
+<div class="field"><label>তারিখ</label><input type="date" id="att_date"></div>
+<div class="field"><label>শ্রেণি</label>
+<select id="att_class">
+<option>নূরানী</option><option>মক্তব</option><option>হিফজ</option>
+<option>কিতাব</option><option>১ম শ্রেণি</option><option>২য় শ্রেণি</option>
+</select>
+</div>
+</div>
+<div class="actions">
+<button class="btn" onclick="toast('উপস্থিতির তালিকা প্রস্তুত হচ্ছে')">📋 উপস্থিতি নেওয়া শুরু</button>
+</div>
+</section>
+
+<!-- ফলাফল -->
+<section id="results" class="panel hidden">
+<h2>📊 পরীক্ষার ফলাফল</h2>
+
+<div class="formgrid">
+<div class="field">
+<label>পরীক্ষা</label>
+<select id="exam">
+<option>১ম সাময়িক পরীক্ষা</option>
+<option>অর্ধবার্ষিক পরীক্ষা</option>
+<option>২য় সাময়িক পরীক্ষা</option>
+<option>বার্ষিক পরীক্ষা</option>
+</select>
+</div>
+
+<div class="field">
+<label>শ্রেণি</label>
+<select>
+<option>নূরানী</option>
+<option>মক্তব</option>
+<option>হিফজ</option>
+<option>কিতাব</option>
+<option>১ম শ্রেণি</option>
+<option>২য় শ্রেণি</option>
+<option>৩য় শ্রেণি</option>
+<option>৪র্থ শ্রেণি</option>
+<option>৫ম শ্রেণি</option>
+</select>
+</div>
+</div>
+
+<div class="cards2" style="margin-top:15px">
+<div class="info"><h3>📝 নম্বর প্রদান</h3><p>বিষয়ভিত্তিক প্রাপ্ত নম্বর সংরক্ষণ।</p></div>
+<div class="info"><h3>🏆 মেধাক্রম</h3><p>মোট নম্বর অনুযায়ী স্থান নির্ধারণ।</p></div>
+<div class="info"><h3>📄 রেজাল্ট</h3><p>ব্যক্তিগত ও শ্রেণির ফলাফল প্রিন্ট/PDF।</p></div>
+</div>
+
+<div class="actions">
+<button class="btn" onclick="toast('রেজাল্ট মডিউল খোলা হয়েছে')">📊 ফলাফল তৈরি</button>
+<button class="btn secondary" onclick="window.print()">🖨️ প্রিন্ট</button>
+</div>
+</section>
+
+<!-- শিক্ষক -->
+<section id="teachers" class="panel hidden">
+<h2>👨‍🏫 শিক্ষক ব্যবস্থাপনা</h2>
+<div class="cards2">
+<div class="info"><h3>শিক্ষক তালিকা</h3><p>সকল শিক্ষক ও কর্মচারীর তথ্য সংরক্ষণ।</p></div>
+<div class="info"><h3>বিষয়</h3><p>শিক্ষকের বিষয় ও দায়িত্ব নির্ধারণ।</p></div>
+</div>
+<div class="actions">
+<button class="btn" onclick="toast('শিক্ষক যোগ করার ফর্ম প্রস্তুত')">➕ শিক্ষক যোগ</button>
+</div>
+</section>
+
+<!-- হিসাব -->
+<section id="accounts" class="panel hidden">
+<h2>💵 আয়-ব্যয় ও হিসাব</h2>
+<div class="cards2">
+<div class="info"><h3>💚 মোট আয়</h3><p>মাদ্রাসার সকল আয়ের হিসাব।</p></div>
+<div class="info"><h3>🔴 মোট ব্যয়</h3><p>সকল খরচের হিসাব।</p></div>
+<div class="info"><h3>📈 হিসাব রিপোর্ট</h3><p>মাসিক ও বার্ষিক রিপোর্ট।</p></div>
+</div>
+<div class="actions">
+<button class="btn" onclick="toast('নতুন আয়/ব্যয় যোগ করার ব্যবস্থা')">➕ হিসাব যোগ</button>
+</div>
+</section>
+
+<!-- নোটিশ -->
+<section id="notices" class="panel hidden">
+<h2>📢 নোটিশ</h2>
+<div class="notice"><b>মাদ্রাসার নোটিশ</b><p>নতুন নোটিশ এখানে প্রকাশ করা যাবে।</p></div>
+<div class="actions">
+<button class="btn" onclick="toast('নোটিশ তৈরির ব্যবস্থা')">➕ নতুন নোটিশ</button>
+</div>
+</section>
+
+<!-- সেটিংস -->
+<section id="settings" class="panel hidden">
+<h2>⚙️ সেটিংস</h2>
+<div class="formgrid">
+<div class="field"><label>মাদ্রাসার নাম</label><input value="কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা"></div>
+<div class="field"><label>মোবাইল</label><input placeholder="মাদ্রাসার মোবাইল"></div>
+<div class="field"><label>ইমেইল</label><input placeholder="ইমেইল"></div>
+<div class="field"><label>মাসিক ফি</label><input type="number" placeholder="টাকা"></div>
+</div>
+<div class="actions">
+<button class="btn" onclick="toast('সেটিংস সংরক্ষণের ব্যবস্থা প্রস্তুত')">💾 সংরক্ষণ</button>
+</div>
+</section>
+
+</div>
+
+<footer>
+© ১৯৯৬–২০২৬ কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
+<br>ডিজিটাল ব্যবস্থাপনা সিস্টেম
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ================================
+   SUPABASE CONFIGURATION
+================================ */
+
+const SUPABASE_URL =
+"https://csruwswvjriainmhznhj.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_ZKLX8kHXtPTe1lA68XP5Hg_Tx9cLa-Y";
+
+/* ================================
+   BASIC SUPABASE REQUEST
+================================ */
+
+async function supabaseRequest(table, options={}){
+
+  const url = SUPABASE_URL + "/rest/v1/" + table;
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json",
+    "Prefer": options.prefer || "return=representation"
+  };
+
+  const response = await fetch(url,{
+    method:options.method || "GET",
+    headers:headers,
+    body:options.body ? JSON.stringify(options.body) : undefined
+  });
+
+  if(!response.ok){
+    const error = await response.text();
+    throw new Error(error);
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : [];
+}
+
+/* ================================
+   DASHBOARD
+================================ */
+
+async function loadDashboard(){
+
+  try{
+
+    const students = await supabaseRequest("students");
+
+    document.getElementById("studentCount").textContent =
+      bengaliNumber(students.length);
+
+    renderStudents(students);
+
+  }catch(error){
+
+    console.log("Student load error:",error);
+
+    document.getElementById("studentCount").textContent="০";
+
+    document.getElementById("studentTable").innerHTML =
+      '<tr><td colspan="8" style="text-align:center">এখনো ছাত্রের তথ্য পাওয়া যায়নি</td></tr>';
+  }
+
+}
+
+/* ================================
+   STUDENT LIST
+================================ */
+
+let allStudents=[];
+
+function renderStudents(data){
+
+  allStudents=data;
+
+  const tbody=document.getElementById("studentTable");
+
+  if(!data.length){
+
+    tbody.innerHTML =
+      '<tr><td colspan="8" style="text-align:center">কোনো ছাত্র পাওয়া যায়নি</td></tr>';
+
+    return;
+  }
+
+  tbody.innerHTML=data.map((s,i)=>`
+
+    <tr>
+      <td>${bengaliNumber(i+1)}</td>
+      <td>${safe(s.student_name || s.name || "")}</td>
+      <td>${safe(s.roll_number || s.roll || "")}</td>
+      <td>${safe(s.admission_number || "")}</td>
+      <td>${safe(s.section || s.class || "")}</td>
+      <td>${safe(s.department || "")}</td>
+      <td>${safe(s.phone || "")}</td>
+      <td><span class="badge">${safe(s.status || "সক্রিয়")}</span></td>
+    </tr>
+
+  `).join("");
+}
+
+function filterStudents(){
+
+  const q=document.getElementById("studentSearch").value.toLowerCase();
+
+  const result=allStudents.filter(s=>{
+
+    const text=[
+      s.student_name,
+      s.name,
+      s.roll_number,
+      s.admission_number,
+      s.phone,
+      s.department,
+      s.section
+    ].join(" ").toLowerCase();
+
+    return text.includes(q);
+  });
+
+  renderStudents(result);
+}
+
+/* ================================
+   ADD STUDENT
+================================ */
+
+async function addStudent(){
+
+  const name=document.getElementById("s_name").value.trim();
+
+  if(!name){
+    toast("ছাত্রের নাম লিখুন");
+    return;
+  }
+
+  const data={
+    student_name:name,
+    roll_number:document.getElementById("s_roll").value.trim(),
+    admission_number:document.getElementById("s_admission").value.trim(),
+    gender:document.getElementById("s_gender").value,
+    date_of_birth:document.getElementById("s_dob").value || null,
+    father_name:document.getElementById("s_father").value.trim(),
+    mother_name:document.getElementById("s_mother").value.trim(),
+    phone:document.getElementById("s_phone").value.trim(),
+    blood_group:document.getElementById("s_blood").value,
+    present_address:document.getElementById("s_address").value.trim(),
+    department:document.getElementById("s_department").value,
+    section:document.getElementById("s_section").value.trim(),
+    admission_date:document.getElementById("s_admission_date").value || null,
+    status:document.getElementById("s_status").value
+  };
+
+  try{
+
+    await supabaseRequest("students",{
+      method:"POST",
+      body:data
+    });
+
+    toast("✅ ছাত্র সফলভাবে সংরক্ষণ হয়েছে");
+
+    clearStudentForm();
+
+    loadDashboard();
+
+  }catch(error){
+
+    console.error(error);
+
+    toast("⚠️ ছাত্র সংরক্ষণ করা যায়নি। Database/RLS পরীক্ষা করুন।");
+  }
+
+}
+
+function clearStudentForm(){
+
+  [
+    "s_name","s_roll","s_admission","s_dob","s_father",
+    "s_mother","s_phone","s_section","s_admission_date","s_address"
+  ].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+}
+
+/* ================================
+   PANELS
+================================ */
+
+function showPanel(id){
+
+  document.querySelectorAll(".panel").forEach(p=>{
+    p.classList.add("hidden");
+  });
+
+  const panel=document.getElementById(id);
+
+  if(panel){
+    panel.classList.remove("hidden");
+    window.scrollTo({top:panel.offsetTop-10,behavior:"smooth"});
+  }
+
+  if(id==="students"){
+    loadDashboard();
+  }
+}
+
+/* ================================
+   TOAST
+================================ */
+
+function toast(message){
+
+  const el=document.getElementById("toast");
+
+  el.textContent=message;
+  el.style.display="block";
+
+  clearTimeout(window.toastTimer);
+
+  window.toastTimer=setTimeout(()=>{
+    el.style.display="none";
+  },3000);
+}
+
+/* ================================
+   SAFETY
+================================ */
+
+function safe(value){
+
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function bengaliNumber(number){
+
+  const en="0123456789";
+  const bn="০১২৩৪৫৬৭৮৯";
+
+  return String(number).replace(/[0-9]/g,d=>bn[en.indexOf(d)]);
+}
+
+/* ================================
+   START
+================================ */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+  loadDashboard();
+
+  const today=new Date().toISOString().split("T")[0];
+
+  const att=document.getElementById("att_date");
+
+  if(att) att.value=today;
+
+  const adm=document.getElementById("s_admission_date");
+
+  if(adm) adm.value=today;
+
+});
+</script>
 
 </body>
 </html>
