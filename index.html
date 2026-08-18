@@ -710,7 +710,7 @@ async function addStudent(){
 
     console.error(error);
 
-    toast("⚠️ ছাত্র সংরক্ষণ করা যায়নি। Database/RLS পরীক্ষা করুন।");
+   toast("❌ Save Error: " + error.message);
   }
 
 }
