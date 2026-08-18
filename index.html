@@ -551,40 +551,93 @@ function renderStudents(data){
 
     <tr>
       <td>${bengaliNumber(i+1)}</td>
-      <td>${safe(s.student_name || s.name || "")}</td>
-      <td>${safe(s.roll_number || s.roll || "")}</td>
-      <td>${safe(s.admission_number || "")}</td>
-      <td>${safe(s.section || s.class || "")}</td>
-      <td>${safe(s.department || "")}</td>
-      <td>${safe(s.phone || "")}</td>
-      <td><span class="badge">${safe(s.status || "সক্রিয়")}</span></td>
+
+      <td>${safe(
+        s.student_name ||
+        s.name ||
+        ""
+      )}</td>
+
+      <td>${safe(
+        s.roll_no ||
+        ""
+      )}</td>
+
+      <td>${safe(
+        s.admission_number ||
+        s.admission_no ||
+        ""
+      )}</td>
+
+      <td>${safe(
+        s.class_name ||
+        ""
+      )}</td>
+
+      <td>${safe(
+        s.department ||
+        ""
+      )}</td>
+
+      <td>${safe(
+        s.phone ||
+        ""
+      )}</td>
+
+      <td>
+        <span class="badge">
+          ${safe(
+            s.status ||
+            "সক্রিয়"
+          )}
+        </span>
+      </td>
     </tr>
 
   `).join("");
-}
 
+}
 function filterStudents(){
 
-  const q=document.getElementById("studentSearch").value.toLowerCase();
+  const q =
+    document.getElementById("studentSearch")
+      .value
+      .toLowerCase()
+      .trim();
 
-  const result=allStudents.filter(s=>{
+  const result =
+    allStudents.filter(s=>{
 
-    const text=[
-      s.student_name,
-      s.name,
-      s.roll_number,
-      s.admission_number,
-      s.phone,
-      s.department,
-      s.section
-    ].join(" ").toLowerCase();
+      const text = [
 
-    return text.includes(q);
-  });
+        s.student_name,
+        s.name,
+
+        s.roll_no,
+
+        s.admission_no,
+        s.admission_number,
+
+        s.phone,
+
+        s.department,
+
+        s.class_name,
+
+        s.section
+
+      ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+      return text.includes(q);
+
+    });
 
   renderStudents(result);
-}
 
+}
 /* ================================
    ADD STUDENT
 ================================ */
@@ -598,21 +651,46 @@ async function addStudent(){
     return;
   }
 
-  const data={
+ const data={
+    institution_id:"c422b372-876b-48fb-a60b-9de7d67fe253",
+
     student_name:name,
-    roll_number:document.getElementById("s_roll").value.trim(),
+
+    roll_no:document.getElementById("s_roll").value.trim(),
+
+    admission_no:document.getElementById("s_admission").value.trim(),
+
     admission_number:document.getElementById("s_admission").value.trim(),
-    gender:document.getElementById("s_gender").value,
-    date_of_birth:document.getElementById("s_dob").value || null,
-    father_name:document.getElementById("s_father").value.trim(),
-    mother_name:document.getElementById("s_mother").value.trim(),
-    phone:document.getElementById("s_phone").value.trim(),
-    blood_group:document.getElementById("s_blood").value,
-    present_address:document.getElementById("s_address").value.trim(),
+
+    class_name:document.getElementById("s_class").value,
+
     department:document.getElementById("s_department").value,
+
     section:document.getElementById("s_section").value.trim(),
+
+    gender:document.getElementById("s_gender").value,
+
+    date_of_birth:document.getElementById("s_dob").value || null,
+
+    father_name:document.getElementById("s_father").value.trim(),
+
+    mother_name:document.getElementById("s_mother").value.trim(),
+
+    phone:document.getElementById("s_phone").value.trim(),
+
+    blood_group:document.getElementById("s_blood").value,
+
+    present_address:document.getElementById("s_address").value.trim(),
+
     admission_date:document.getElementById("s_admission_date").value || null,
-    status:document.getElementById("s_status").value
+
+    residential_status:document.getElementById("s_residence").value,
+
+    status:document.getElementById("s_status").value,
+
+    created_at:new Date().toISOString(),
+
+    updated_at:new Date().toISOString()
   };
 
   try{
