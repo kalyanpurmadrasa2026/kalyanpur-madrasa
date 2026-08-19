@@ -280,14 +280,39 @@ footer{
 </select>
 </div>
 
+<!-- বিভাগ -->
 <div class="field">
 <label>বিভাগ</label>
-<select id="s_department">
-<option>নূরানী</option>
-<option>মক্তব</option>
-<option>হিফজ</option>
-<option>কিতাব</option>
+
+<select id="s_department" onchange="updateClassOptions()">
+
+<option value="নূরানী">নূরানী</option>
+<option value="মক্তব">মক্তব</option>
+<option value="হিফজ">হিফজ</option>
+<option value="কিতাব">কিতাব</option>
+
 </select>
+</div>
+
+
+<!-- জামাত / শ্রেণি -->
+<div class="field">
+
+<label>জামাত / শ্রেণি</label>
+
+<select id="s_class">
+
+<!-- নূরানী -->
+<option value="নূরানী">নূরানী</option>
+<option value="নার্সারি">নার্সারি</option>
+<option value="১ম শ্রেণি">১ম শ্রেণি</option>
+<option value="২য় শ্রেণি">২য় শ্রেণি</option>
+<option value="৩য় শ্রেণি">৩য় শ্রেণি</option>
+<option value="৪র্থ শ্রেণি">৪র্থ শ্রেণি</option>
+<option value="৫ম শ্রেণি">৫ম শ্রেণি</option>
+
+</select>
+
 </div>
 
 <div class="field">
@@ -778,7 +803,102 @@ function filterStudents() {
 /* =====================================================
    ADD STUDENT
 ===================================================== */
+/* =====================================================
+   DEPARTMENT → CLASS / JAMAAT
+===================================================== */
 
+function updateClassOptions() {
+
+  const department =
+    document.getElementById("s_department").value;
+
+  const classSelect =
+    document.getElementById("s_class");
+
+  if (!classSelect) return;
+
+  let options = [];
+
+  if (department === "নূরানী") {
+
+    options = [
+      "নূরানী",
+      "নার্সারি",
+      "১ম শ্রেণি",
+      "২য় শ্রেণি",
+      "৩য় শ্রেণি",
+      "৪র্থ শ্রেণি",
+      "৫ম শ্রেণি"
+    ];
+
+  }
+
+  else if (department === "মক্তব") {
+
+    options = [
+      "মক্তব ১ম জামাত",
+      "মক্তব ২য় জামাত",
+      "মক্তব ৩য় জামাত",
+      "মক্তব ৪র্থ জামাত",
+      "মক্তব ৫ম জামাত",
+      "মক্তব ৬ষ্ঠ জামাত",
+      "মক্তব ৭ম জামাত",
+      "মক্তব ৮ম জামাত",
+      "মক্তব ৯ম জামাত",
+      "মক্তব ১০ম জামাত"
+    ];
+
+  }
+
+  else if (department === "হিফজ") {
+
+    options = [
+      "হিফজ ১ম জামাত",
+      "হিফজ ২য় জামাত",
+      "হিফজ ৩য় জামাত",
+      "হিফজ ৪র্থ জামাত",
+      "হিফজ ৫ম জামাত",
+      "হিফজ ৬ষ্ঠ জামাত",
+      "হিফজ ৭ম জামাত",
+      "হিফজ ৮ম জামাত",
+      "হিফজ ৯ম জামাত",
+      "হিফজ ১০ম জামাত"
+    ];
+
+  }
+
+  else if (department === "কিতাব") {
+
+    options = [
+      "উর্দু খানা",
+      "মিজান",
+      "নাহবেমীর",
+      "হেদায়াতুন্নাহু",
+      "শরহে জামী",
+      "শরহে বেকায়া",
+      "হেদায়া",
+      "মিশকাত",
+      "দাওরায়ে হাদিস"
+    ];
+
+  }
+
+
+  classSelect.innerHTML = "";
+
+  options.forEach(item => {
+
+    const option =
+      document.createElement("option");
+
+    option.value = item;
+    option.textContent = item;
+
+    classSelect.appendChild(option);
+
+  });
+
+}
 async function addStudent() {
 
   const name =
