@@ -175,31 +175,72 @@ footer{
 
 <!-- ছাত্র তালিকা -->
 <section id="students" class="panel hidden">
+
 <h2>👨‍🎓 ছাত্র তালিকা</h2>
 
-<input class="search" id="studentSearch"
-placeholder="নাম, রোল বা ভর্তি নম্বর দিয়ে খুঁজুন..."
-oninput="filterStudents()">
+<div class="formgrid">
+
+  <div class="field">
+    <label>বিভাগ নির্বাচন</label>
+
+    <select id="studentDepartmentFilter" onchange="filterStudents()">
+      <option value="">সকল বিভাগ</option>
+      <option value="নূরানী">নূরানী</option>
+      <option value="মক্তব">মক্তব</option>
+      <option value="হিফজ">হিফজ</option>
+      <option value="কিতাব">কিতাব</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>জামাত / স্তর</label>
+
+    <select id="studentClassFilter" onchange="filterStudents()">
+      <option value="">সকল জামাত</option>
+    </select>
+  </div>
+
+</div>
+
+<input
+  class="search"
+  id="studentSearch"
+  placeholder="নাম / রোল / ভর্তি নম্বর দিয়ে খুঁজুন..."
+  oninput="filterStudents()"
+>
 
 <div class="tablebox">
+
 <table>
+
 <thead>
 <tr>
 <th>ক্রম</th>
 <th>নাম</th>
 <th>রোল</th>
 <th>ভর্তি নম্বর</th>
-<th>শ্রেণি</th>
+<th>শ্রেণি / জামাত</th>
 <th>বিভাগ</th>
 <th>মোবাইল</th>
 <th>স্ট্যাটাস</th>
+<th>অ্যাকশন</th>
 </tr>
 </thead>
+
 <tbody id="studentTable">
-<tr><td colspan="8" style="text-align:center">ছাত্রের তথ্য লোড হচ্ছে...</td></tr>
+
+<tr>
+<td colspan="9" style="text-align:center">
+ছাত্রের তথ্য লোড হচ্ছে...
+</td>
+</tr>
+
 </tbody>
+
 </table>
+
 </div>
+
 </section>
 
 <!-- ছাত্র যোগ -->
@@ -653,41 +694,82 @@ function renderStudents(data) {
    STUDENT SEARCH
 ===================================================== */
 
+/* =====================================================
+   STUDENT SEARCH
+   নাম / রোল / ভর্তি নম্বর / বিভাগ / শ্রেণি
+===================================================== */
+
 function filterStudents() {
 
+  const searchBox =
+    document.getElementById("studentSearch");
+
+  if (!searchBox) return;
+
   const q =
-    document
-      .getElementById("studentSearch")
-      .value
-      .toLowerCase()
-      .trim();
-
-
-  const result =
-    allStudents.filter(s => {
-
-      const text = [
-
-        s.student_name,
-        s.name,
-        s.roll_no,
-        s.admission_no,
-        s.admission_number,
-        s.phone,
-        s.department,
-        s.class_name,
-        s.section
-
-      ]
-      .filter(Boolean)
-      .join(" ")
+    searchBox.value
+      .toString()
+      .trim()
       .toLowerCase();
 
+  // কিছু লেখা না থাকলে সব ছাত্র দেখাবে
+  if (!q) {
+    renderStudents(allStudents);
+    return;
+  }
 
-      return text.includes(q);
+  const result = allStudents.filter(student => {
 
-    });
+    const name =
+      (student.student_name || student.name || "")
+        .toString()
+        .toLowerCase();
 
+    const roll =
+      (student.roll_no || "")
+        .toString()
+        .toLowerCase();
+
+    const admission =
+      (
+        student.admission_number ||
+        student.admission_no ||
+        ""
+      )
+        .toString()
+        .toLowerCase();
+
+    const department =
+      (student.department || "")
+        .toString()
+        .toLowerCase();
+
+    const className =
+      (student.class_name || "")
+        .toString()
+        .toLowerCase();
+
+    const section =
+      (student.section || "")
+        .toString()
+        .toLowerCase();
+
+    const phone =
+      (student.phone || "")
+        .toString()
+        .toLowerCase();
+
+    return (
+      name.includes(q) ||
+      roll.includes(q) ||
+      admission.includes(q) ||
+      department.includes(q) ||
+      className.includes(q) ||
+      section.includes(q) ||
+      phone.includes(q)
+    );
+
+  });
 
   renderStudents(result);
 }
