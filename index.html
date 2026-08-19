@@ -461,9 +461,9 @@ oninput="filterStudents()">
 <div id="toast"></div>
 
 <script>
-/* ================================
+/* =====================================================
    SUPABASE CONFIGURATION
-================================ */
+===================================================== */
 
 const SUPABASE_URL =
 "https://csruwswvjriainmhznhj.supabase.co";
@@ -471,11 +471,15 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_ZKLX8kHXtPTe1lA68XP5Hg_Tx9cLa-Y";
 
-/* ================================
-   BASIC SUPABASE REQUEST
-================================ */
+const INSTITUTION_ID =
+"c422b372-876b-48fb-a60b-9de7d67fe253";
 
-async function supabaseRequest(table, options={}){
+
+/* =====================================================
+   SUPABASE REQUEST
+===================================================== */
+
+async function supabaseRequest(table, options = {}) {
 
   const url = SUPABASE_URL + "/rest/v1/" + table;
 
@@ -486,145 +490,192 @@ async function supabaseRequest(table, options={}){
     "Prefer": options.prefer || "return=representation"
   };
 
-  const response = await fetch(url,{
-    method:options.method || "GET",
-    headers:headers,
-    body:options.body ? JSON.stringify(options.body) : undefined
+  const response = await fetch(url, {
+    method: options.method || "GET",
+    headers: headers,
+    body: options.body
+      ? JSON.stringify(options.body)
+      : undefined
   });
 
-  if(!response.ok){
+  if (!response.ok) {
+
     const error = await response.text();
+
     throw new Error(error);
   }
 
   const text = await response.text();
+
   return text ? JSON.parse(text) : [];
 }
 
-/* ================================
+
+/* =====================================================
    DASHBOARD
-================================ */
+===================================================== */
 
-async function loadDashboard(){
+async function loadDashboard() {
 
-  try{
+  try {
 
-    const students = await supabaseRequest("students");
+    const students = await supabaseRequest(
+      "students?institution_id=eq." + INSTITUTION_ID +
+      "&order=created_at.desc"
+    );
 
     document.getElementById("studentCount").textContent =
       bengaliNumber(students.length);
 
     renderStudents(students);
 
-  }catch(error){
+  } catch (error) {
 
-    console.log("Student load error:",error);
+    console.error("Student load error:", error);
 
-    document.getElementById("studentCount").textContent="০";
+    document.getElementById("studentCount").textContent = "০";
 
     document.getElementById("studentTable").innerHTML =
-      '<tr><td colspan="8" style="text-align:center">এখনো ছাত্রের তথ্য পাওয়া যায়নি</td></tr>';
+      '<tr><td colspan="9" style="text-align:center">' +
+      'এখনো ছাত্রের তথ্য পাওয়া যায়নি' +
+      '</td></tr>';
   }
-
 }
 
-/* ================================
+
+/* =====================================================
    STUDENT LIST
-================================ */
+===================================================== */
 
-let allStudents=[];
+let allStudents = [];
 
-function renderStudents(data){
 
-  allStudents=data;
+function renderStudents(data) {
 
-  const tbody=document.getElementById("studentTable");
+  allStudents = data;
 
-  if(!data.length){
+  const tbody =
+    document.getElementById("studentTable");
+
+  if (!data.length) {
 
     tbody.innerHTML =
-      '<tr><td colspan="8" style="text-align:center">কোনো ছাত্র পাওয়া যায়নি</td></tr>';
+      '<tr><td colspan="9" style="text-align:center">' +
+      'কোনো ছাত্র পাওয়া যায়নি' +
+      '</td></tr>';
 
     return;
   }
 
-  tbody.innerHTML=data.map((s,i)=>`
 
-    <tr>
-      <td>${bengaliNumber(i+1)}</td>
+  tbody.innerHTML = data.map((s, i) => {
 
-      <td>${safe(
-        s.student_name ||
-        s.name ||
-        ""
-      )}</td>
+    let statusText = "সক্রিয়";
 
-      <td>${safe(
-        s.roll_no ||
-        ""
-      )}</td>
+    if (s.status === "inactive") {
+      statusText = "নিষ্ক্রিয়";
+    }
 
-      <td>${safe(
-        s.admission_number ||
-        s.admission_no ||
-        ""
-      )}</td>
+    if (s.status === "left") {
+      statusText = "ছেড়ে দিয়েছে";
+    }
 
-      <td>${safe(
-        s.class_name ||
-        ""
-      )}</td>
 
-      <td>${safe(
-        s.department ||
-        ""
-      )}</td>
+    return `
 
-      <td>${safe(
-        s.phone ||
-        ""
-      )}</td>
+      <tr>
 
-      <td>
-        <span class="badge">
+        <td>${bengaliNumber(i + 1)}</td>
+
+        <td>
           ${safe(
-            s.status ||
-            "সক্রিয়"
+            s.student_name ||
+            s.name ||
+            ""
           )}
-        </span>
-      </td>
-    </tr>
+        </td>
 
-  `).join("");
+        <td>
+          ${safe(s.roll_no || "")}
+        </td>
 
+        <td>
+          ${safe(
+            s.admission_number ||
+            s.admission_no ||
+            ""
+          )}
+        </td>
+
+        <td>
+          ${safe(s.class_name || "")}
+        </td>
+
+        <td>
+          ${safe(s.department || "")}
+        </td>
+
+        <td>
+          ${safe(s.phone || "")}
+        </td>
+
+        <td>
+          <span class="badge">
+            ${safe(statusText)}
+          </span>
+        </td>
+
+        <td>
+
+          <button
+            class="btn secondary"
+            onclick="editStudent('${s.id}')">
+            ✏️ Edit
+          </button>
+
+          <button
+            class="btn danger"
+            onclick="deleteStudent('${s.id}')">
+            🗑️ Delete
+          </button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }).join("");
 }
-function filterStudents(){
+
+
+/* =====================================================
+   STUDENT SEARCH
+===================================================== */
+
+function filterStudents() {
 
   const q =
-    document.getElementById("studentSearch")
+    document
+      .getElementById("studentSearch")
       .value
       .toLowerCase()
       .trim();
 
+
   const result =
-    allStudents.filter(s=>{
+    allStudents.filter(s => {
 
       const text = [
 
         s.student_name,
         s.name,
-
         s.roll_no,
-
         s.admission_no,
         s.admission_number,
-
         s.phone,
-
         s.department,
-
         s.class_name,
-
         s.section
 
       ]
@@ -632,183 +683,717 @@ function filterStudents(){
       .join(" ")
       .toLowerCase();
 
+
       return text.includes(q);
 
     });
 
+
   renderStudents(result);
-
 }
-/* ================================
+
+
+/* =====================================================
    ADD STUDENT
-================================ */
+===================================================== */
 
-async function addStudent(){
+async function addStudent() {
 
-  const name=document.getElementById("s_name").value.trim();
+  const name =
+    document
+      .getElementById("s_name")
+      .value
+      .trim();
 
-  if(!name){
-    toast("ছাত্রের নাম লিখুন");
+
+  if (!name) {
+
+    toast("❌ ছাত্রের নাম লিখুন");
+
     return;
   }
 
- const data={
-    institution_id:"c422b372-876b-48fb-a60b-9de7d67fe253",
 
-    student_name:name,
+  const admission =
+    document
+      .getElementById("s_admission")
+      .value
+      .trim();
 
-    roll_no:document.getElementById("s_roll").value.trim(),
 
-    admission_no:document.getElementById("s_admission").value.trim(),
+  const data = {
 
-    admission_number:document.getElementById("s_admission").value.trim(),
+    institution_id: INSTITUTION_ID,
 
-    class_name:document.getElementById("s_class").value,
+    student_name: name,
 
-    department:document.getElementById("s_department").value,
+    roll_no:
+      document
+        .getElementById("s_roll")
+        .value
+        .trim(),
 
-    section:document.getElementById("s_section").value.trim(),
+    admission_no: admission,
 
-    gender:document.getElementById("s_gender").value,
+    admission_number: admission,
 
-    date_of_birth:document.getElementById("s_dob").value || null,
+    class_name:
+      document
+        .getElementById("s_class")
+        .value,
 
-    father_name:document.getElementById("s_father").value.trim(),
+    department:
+      document
+        .getElementById("s_department")
+        .value,
 
-    mother_name:document.getElementById("s_mother").value.trim(),
+    section:
+      document
+        .getElementById("s_section")
+        .value
+        .trim(),
 
-    phone:document.getElementById("s_phone").value.trim(),
+    gender:
+      document
+        .getElementById("s_gender")
+        .value,
 
-    blood_group:document.getElementById("s_blood").value,
+    date_of_birth:
+      document
+        .getElementById("s_dob")
+        .value || null,
 
-    present_address:document.getElementById("s_address").value.trim(),
+    father_name:
+      document
+        .getElementById("s_father")
+        .value
+        .trim(),
 
-    admission_date:document.getElementById("s_admission_date").value || null,
+    mother_name:
+      document
+        .getElementById("s_mother")
+        .value
+        .trim(),
 
-    residential_status:document.getElementById("s_residence").value,
+    phone:
+      document
+        .getElementById("s_phone")
+        .value
+        .trim(),
 
-    status:document.getElementById("s_status").value,
+    blood_group:
+      document
+        .getElementById("s_blood")
+        .value,
 
-    created_at:new Date().toISOString(),
+    present_address:
+      document
+        .getElementById("s_address")
+        .value
+        .trim(),
 
-    updated_at:new Date().toISOString()
+    admission_date:
+      document
+        .getElementById("s_admission_date")
+        .value || null,
+
+    residential_status:
+      document
+        .getElementById("s_residence")
+        .value,
+
+    status:
+      document
+        .getElementById("s_status")
+        .value,
+
+    created_at:
+      new Date().toISOString(),
+
+    updated_at:
+      new Date().toISOString()
   };
 
-  try{
 
-    await supabaseRequest("students",{
-      method:"POST",
-      body:data
+  try {
+
+    await supabaseRequest("students", {
+
+      method: "POST",
+
+      body: data
+
     });
+
 
     toast("✅ ছাত্র সফলভাবে সংরক্ষণ হয়েছে");
 
+
     clearStudentForm();
 
-    loadDashboard();
 
-  }catch(error){
+    await loadDashboard();
+
+
+  } catch (error) {
 
     console.error(error);
 
-   toast("❌ Save Error: " + error.message);
+    toast(
+      "❌ Save Error: " +
+      error.message
+    );
   }
-
 }
 
-function clearStudentForm(){
+
+/* =====================================================
+   EDIT STUDENT
+===================================================== */
+
+async function editStudent(id) {
+
+  const student =
+    allStudents.find(
+      s => String(s.id) === String(id)
+    );
+
+
+  if (!student) {
+
+    toast("❌ ছাত্রের তথ্য পাওয়া যায়নি");
+
+    return;
+  }
+
+
+  document.getElementById("s_name").value =
+    student.student_name || student.name || "";
+
+
+  document.getElementById("s_roll").value =
+    student.roll_no || "";
+
+
+  document.getElementById("s_admission").value =
+    student.admission_no ||
+    student.admission_number ||
+    "";
+
+
+  document.getElementById("s_class").value =
+    student.class_name || "";
+
+
+  document.getElementById("s_department").value =
+    student.department || "";
+
+
+  document.getElementById("s_section").value =
+    student.section || "";
+
+
+  document.getElementById("s_gender").value =
+    student.gender || "male";
+
+
+  document.getElementById("s_dob").value =
+    student.date_of_birth || "";
+
+
+  document.getElementById("s_father").value =
+    student.father_name || "";
+
+
+  document.getElementById("s_mother").value =
+    student.mother_name || "";
+
+
+  document.getElementById("s_phone").value =
+    student.phone || "";
+
+
+  document.getElementById("s_blood").value =
+    student.blood_group || "জানা নেই";
+
+
+  document.getElementById("s_admission_date").value =
+    student.admission_date || "";
+
+
+  document.getElementById("s_residence").value =
+    student.residential_status || "residential";
+
+
+  document.getElementById("s_status").value =
+    student.status || "active";
+
+
+  document.getElementById("s_address").value =
+    student.present_address || "";
+
+
+  showPanel("addStudent");
+
+
+  const saveButton =
+    document.querySelector(
+      '#addStudent button[onclick="addStudent()"]'
+    );
+
+
+  if (saveButton) {
+
+    saveButton.textContent =
+      "✏️ ছাত্রের তথ্য আপডেট করুন";
+
+    saveButton.onclick =
+      function() {
+        updateStudent(id);
+      };
+  }
+
+
+  toast("✏️ ছাত্রের তথ্য সম্পাদনার জন্য খোলা হয়েছে");
+}
+
+
+/* =====================================================
+   UPDATE STUDENT
+===================================================== */
+
+async function updateStudent(id) {
+
+  const name =
+    document
+      .getElementById("s_name")
+      .value
+      .trim();
+
+
+  if (!name) {
+
+    toast("❌ ছাত্রের নাম লিখুন");
+
+    return;
+  }
+
+
+  const admission =
+    document
+      .getElementById("s_admission")
+      .value
+      .trim();
+
+
+  const data = {
+
+    student_name: name,
+
+    roll_no:
+      document
+        .getElementById("s_roll")
+        .value
+        .trim(),
+
+    admission_no: admission,
+
+    admission_number: admission,
+
+    class_name:
+      document
+        .getElementById("s_class")
+        .value,
+
+    department:
+      document
+        .getElementById("s_department")
+        .value,
+
+    section:
+      document
+        .getElementById("s_section")
+        .value
+        .trim(),
+
+    gender:
+      document
+        .getElementById("s_gender")
+        .value,
+
+    date_of_birth:
+      document
+        .getElementById("s_dob")
+        .value || null,
+
+    father_name:
+      document
+        .getElementById("s_father")
+        .value
+        .trim(),
+
+    mother_name:
+      document
+        .getElementById("s_mother")
+        .value
+        .trim(),
+
+    phone:
+      document
+        .getElementById("s_phone")
+        .value
+        .trim(),
+
+    blood_group:
+      document
+        .getElementById("s_blood")
+        .value,
+
+    present_address:
+      document
+        .getElementById("s_address")
+        .value
+        .trim(),
+
+    admission_date:
+      document
+        .getElementById("s_admission_date")
+        .value || null,
+
+    residential_status:
+      document
+        .getElementById("s_residence")
+        .value,
+
+    status:
+      document
+        .getElementById("s_status")
+        .value,
+
+    updated_at:
+      new Date().toISOString()
+  };
+
+
+  try {
+
+    await supabaseRequest(
+      "students?id=eq." + id,
+      {
+        method: "PATCH",
+        body: data
+      }
+    );
+
+
+    toast("✅ ছাত্রের তথ্য আপডেট হয়েছে");
+
+
+    clearStudentForm();
+
+
+    const saveButton =
+      document.querySelector(
+        '#addStudent button[onclick="updateStudent(' + id + ')"]'
+      );
+
+
+    if (saveButton) {
+
+      saveButton.textContent =
+        "💾 ছাত্র সংরক্ষণ";
+
+      saveButton.onclick =
+        addStudent;
+    }
+
+
+    await loadDashboard();
+
+
+    showPanel("students");
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast(
+      "❌ Update Error: " +
+      error.message
+    );
+  }
+}
+
+
+/* =====================================================
+   DELETE STUDENT
+===================================================== */
+
+async function deleteStudent(id) {
+
+  const student =
+    allStudents.find(
+      s => String(s.id) === String(id)
+    );
+
+
+  const name =
+    student
+      ? (student.student_name || student.name || "এই ছাত্র")
+      : "এই ছাত্র";
+
+
+  const confirmed =
+    confirm(
+      "আপনি কি নিশ্চিতভাবে \"" +
+      name +
+      "\"-কে মুছে ফেলতে চান?"
+    );
+
+
+  if (!confirmed) {
+
+    return;
+  }
+
+
+  try {
+
+    await supabaseRequest(
+      "students?id=eq." + id,
+      {
+        method: "DELETE"
+      }
+    );
+
+
+    toast("✅ ছাত্রের তথ্য মুছে ফেলা হয়েছে");
+
+
+    await loadDashboard();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast(
+      "❌ Delete Error: " +
+      error.message
+    );
+  }
+}
+
+
+/* =====================================================
+   CLEAR STUDENT FORM
+===================================================== */
+
+function clearStudentForm() {
 
   [
-    "s_name","s_roll","s_admission","s_dob","s_father",
-    "s_mother","s_phone","s_section","s_admission_date","s_address"
-  ].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.value="";
+
+    "s_name",
+    "s_roll",
+    "s_admission",
+    "s_dob",
+    "s_father",
+    "s_mother",
+    "s_phone",
+    "s_section",
+    "s_admission_date",
+    "s_address"
+
+  ].forEach(id => {
+
+    const el =
+      document.getElementById(id);
+
+    if (el) {
+      el.value = "";
+    }
+
   });
 
+
+  document.getElementById("s_gender").value =
+    "male";
+
+  document.getElementById("s_residence").value =
+    "residential";
+
+  document.getElementById("s_status").value =
+    "active";
+
+  document.getElementById("s_blood").value =
+    "জানা নেই";
+
+
+  const saveButton =
+    document.querySelector(
+      '#addStudent .btn:not(.secondary)'
+    );
+
+
+  if (saveButton) {
+
+    saveButton.textContent =
+      "💾 ছাত্র সংরক্ষণ";
+
+    saveButton.onclick =
+      addStudent;
+  }
 }
 
-/* ================================
+
+/* =====================================================
    PANELS
-================================ */
+===================================================== */
 
-function showPanel(id){
+function showPanel(id) {
 
-  document.querySelectorAll(".panel").forEach(p=>{
-    p.classList.add("hidden");
-  });
+  document
+    .querySelectorAll(".panel")
+    .forEach(p => {
 
-  const panel=document.getElementById(id);
+      p.classList.add("hidden");
 
-  if(panel){
+    });
+
+
+  const panel =
+    document.getElementById(id);
+
+
+  if (panel) {
+
     panel.classList.remove("hidden");
-    window.scrollTo({top:panel.offsetTop-10,behavior:"smooth"});
+
+    window.scrollTo({
+      top: panel.offsetTop - 10,
+      behavior: "smooth"
+    });
+
   }
 
-  if(id==="students"){
+
+  if (id === "students") {
+
     loadDashboard();
+
   }
 }
 
-/* ================================
+
+/* =====================================================
    TOAST
-================================ */
+===================================================== */
 
-function toast(message){
+function toast(message) {
 
-  const el=document.getElementById("toast");
+  const el =
+    document.getElementById("toast");
 
-  el.textContent=message;
-  el.style.display="block";
 
-  clearTimeout(window.toastTimer);
+  el.textContent =
+    message;
 
-  window.toastTimer=setTimeout(()=>{
-    el.style.display="none";
-  },3000);
+  el.style.display =
+    "block";
+
+
+  clearTimeout(
+    window.toastTimer
+  );
+
+
+  window.toastTimer =
+    setTimeout(() => {
+
+      el.style.display =
+        "none";
+
+    }, 3000);
 }
 
-/* ================================
-   SAFETY
-================================ */
 
-function safe(value){
+/* =====================================================
+   SAFETY
+===================================================== */
+
+function safe(value) {
 
   return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+
+    .replaceAll("&", "&amp;")
+
+    .replaceAll("<", "&lt;")
+
+    .replaceAll(">", "&gt;")
+
+    .replaceAll('"', "&quot;")
+
+    .replaceAll("'", "&#039;");
 }
 
-function bengaliNumber(number){
 
-  const en="0123456789";
-  const bn="০১২৩৪৫৬৭৮৯";
+function bengaliNumber(number) {
 
-  return String(number).replace(/[0-9]/g,d=>bn[en.indexOf(d)]);
+  const en =
+    "0123456789";
+
+  const bn =
+    "০১২৩৪৫৬৭৮৯";
+
+
+  return String(number)
+    .replace(
+      /[0-9]/g,
+      d => bn[en.indexOf(d)]
+    );
 }
 
-/* ================================
+
+/* =====================================================
    START
-================================ */
+===================================================== */
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-  loadDashboard();
+    loadDashboard();
 
-  const today=new Date().toISOString().split("T")[0];
 
-  const att=document.getElementById("att_date");
+    const today =
+      new Date()
+        .toISOString()
+        .split("T")[0];
 
-  if(att) att.value=today;
 
-  const adm=document.getElementById("s_admission_date");
+    const att =
+      document.getElementById("att_date");
 
-  if(adm) adm.value=today;
 
-});
+    if (att) {
+      att.value = today;
+    }
+
+
+    const adm =
+      document.getElementById(
+        "s_admission_date"
+      );
+
+
+    if (adm) {
+      adm.value = today;
+    }
+
+  }
+);
+
 </script>
 
 </body>
