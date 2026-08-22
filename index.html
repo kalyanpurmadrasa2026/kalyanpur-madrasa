@@ -386,7 +386,28 @@ footer{
 <label>বর্তমান ঠিকানা</label>
 <textarea id="s_address"></textarea>
 </div>
+<div class="field" style="grid-column:1/-1">
+  <label>স্থায়ী ঠিকানা</label>
+  <textarea id="s_permanent_address"></textarea>
+</div>
 
+<div class="field">
+  <label>
+    <input
+      type="checkbox"
+      id="s_same_address"
+      onchange="copyAddress()">
+    বর্তমান ঠিকানাই স্থায়ী ঠিকানা
+  </label>
+</div>
+
+<div class="field">
+  <label>ছাত্রের ছবি</label>
+  <input
+    type="file"
+    id="s_photo"
+    accept="image/*">
+</div>
 </div>
 
 <div class="actions">
@@ -1391,7 +1412,31 @@ async function deleteStudent(id) {
 /* =====================================================
    CLEAR STUDENT FORM
 ===================================================== */
+function copyAddress() {
 
+  const same =
+    document.getElementById("s_same_address");
+
+  const current =
+    document.getElementById("s_address");
+
+  const permanent =
+    document.getElementById("s_permanent_address");
+
+  if (!same || !current || !permanent) return;
+
+  if (same.checked) {
+
+    permanent.value = current.value;
+    permanent.readOnly = true;
+
+  } else {
+
+    permanent.value = "";
+    permanent.readOnly = false;
+
+  }
+}
 function clearStudentForm() {
 
   [
