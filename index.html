@@ -634,6 +634,10 @@ async function loadDashboard() {
 let allStudents = [];
 
 
+/* =====================================================
+   STUDENT LIST + PROFILE
+===================================================== */
+
 function renderStudents(data) {
 
   allStudents = data;
@@ -641,10 +645,12 @@ function renderStudents(data) {
   const tbody =
     document.getElementById("studentTable");
 
+  if (!tbody) return;
+
   if (!data.length) {
 
     tbody.innerHTML =
-      '<tr><td colspan="9" style="text-align:center">' +
+      '<tr><td colspan="10" style="text-align:center">' +
       'কোনো ছাত্র পাওয়া যায়নি' +
       '</td></tr>';
 
@@ -665,11 +671,94 @@ function renderStudents(data) {
     }
 
 
+    /*
+      বিভিন্ন সম্ভাব্য photo field থেকে ছবি খুঁজবে।
+      ভবিষ্যতে database-এর আসল photo field জানা গেলে
+      এখানে সহজেই নির্দিষ্ট করা যাবে।
+    */
+
+    const photoUrl =
+      s.photo_url ||
+      s.student_photo ||
+      s.photo ||
+      s.image_url ||
+      s.image ||
+      "";
+
+
+    const photoHtml = photoUrl
+
+      ? `
+        <img
+          src="${safe(photoUrl)}"
+          alt="ছাত্রের ছবি"
+          style="
+            width:48px;
+            height:48px;
+            object-fit:cover;
+            border-radius:50%;
+            border:2px solid #087f5b;
+            display:block;
+            margin:auto;
+          "
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+        >
+
+        <div
+          style="
+            width:48px;
+            height:48px;
+            border-radius:50%;
+            background:#e8f7f1;
+            color:#075e54;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+            margin:auto;
+            display:none;
+          "
+        >
+          👨‍🎓
+        </div>
+      `
+
+      : `
+        <div
+          style="
+            width:48px;
+            height:48px;
+            border-radius:50%;
+            background:#e8f7f1;
+            color:#075e54;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+            margin:auto;
+          "
+        >
+          👨‍🎓
+        </div>
+      `;
+
+
     return `
 
       <tr>
 
-        <td>${bengaliNumber(i + 1)}</td>
+        <td>
+          ${bengaliNumber(i + 1)}
+        </td>
+
+
+        <!-- ছবি -->
+
+        <td>
+          ${photoHtml}
+        </td>
+
+
+        <!-- নাম -->
 
         <td>
           ${safe(
@@ -679,9 +768,18 @@ function renderStudents(data) {
           )}
         </td>
 
+
+        <!-- রোল -->
+
         <td>
-          ${safe(s.roll_no || "")}
+          ${safe(
+            s.roll_no ||
+            ""
+          )}
         </td>
+
+
+        <!-- ভর্তি নম্বর -->
 
         <td>
           ${safe(
@@ -691,17 +789,38 @@ function renderStudents(data) {
           )}
         </td>
 
-        <td>
-          ${safe(s.class_name || "")}
-        </td>
+
+        <!-- শ্রেণি -->
 
         <td>
-          ${safe(s.department || "")}
+          ${safe(
+            s.class_name ||
+            ""
+          )}
         </td>
 
+
+        <!-- বিভাগ -->
+
         <td>
-          ${safe(s.phone || "")}
+          ${safe(
+            s.department ||
+            ""
+          )}
         </td>
+
+
+        <!-- মোবাইল -->
+
+        <td>
+          ${safe(
+            s.phone ||
+            ""
+          )}
+        </td>
+
+
+        <!-- Status -->
 
         <td>
           <span class="badge">
@@ -709,19 +828,43 @@ function renderStudents(data) {
           </span>
         </td>
 
+
+        <!-- Action -->
+
         <td>
 
-          <button
-            class="btn secondary"
-            onclick="editStudent('${s.id}')">
-            ✏️ Edit
-          </button>
+          <div
+            style="
+              display:flex;
+              gap:6px;
+              flex-wrap:wrap;
+            "
+          >
 
-          <button
-            class="btn danger"
-            onclick="deleteStudent('${s.id}')">
-            🗑️ Delete
-          </button>
+            <button
+              class="btn secondary"
+              onclick="viewStudent('${safe(s.id)}')"
+            >
+              👁️ View
+            </button>
+
+
+            <button
+              class="btn secondary"
+              onclick="editStudent('${safe(s.id)}')"
+            >
+              ✏️ Edit
+            </button>
+
+
+            <button
+              class="btn danger"
+              onclick="deleteStudent('${safe(s.id)}')"
+            >
+              🗑️ Delete
+            </button>
+
+          </div>
 
         </td>
 
@@ -730,6 +873,878 @@ function renderStudents(data) {
     `;
 
   }).join("");
+}
+
+
+/* =====================================================
+   STUDENT PROFILE MODAL
+===================================================== */
+
+function createStudentProfileModal() {
+
+  let modal =
+    document.getElementById(
+      "studentProfileModal"
+    );
+
+
+  if (modal) {
+    return modal;
+  }
+
+
+  modal =
+    document.createElement("div");
+
+  modal.id =
+    "studentProfileModal";
+
+
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    z-index:99999;
+    display:none;
+    overflow-y:auto;
+    padding:15px;
+  `;
+
+
+  modal.innerHTML = `
+
+    <div
+      id="studentProfileBox"
+      style="
+        max-width:850px;
+        margin:20px auto;
+        background:white;
+        border-radius:20px;
+        overflow:hidden;
+        box-shadow:0 10px 40px rgba(0,0,0,.3);
+      "
+    >
+
+      <!-- Profile Header -->
+
+      <div
+        style="
+          background:linear-gradient(
+            135deg,
+            #075e54,
+            #087f5b
+          );
+          color:white;
+          padding:20px;
+          text-align:center;
+          position:relative;
+        "
+      >
+
+        <button
+          onclick="closeStudentProfile()"
+          style="
+            position:absolute;
+            right:12px;
+            top:12px;
+            width:38px;
+            height:38px;
+            border:0;
+            border-radius:50%;
+            background:rgba(255,255,255,.2);
+            color:white;
+            font-size:20px;
+          "
+        >
+          ×
+        </button>
+
+
+        <div id="profilePhotoBox"></div>
+
+
+        <h2
+          id="profileName"
+          style="
+            margin-top:12px;
+            font-size:22px;
+          "
+        >
+        </h2>
+
+
+        <p
+          id="profileClass"
+          style="
+            margin-top:5px;
+            opacity:.9;
+          "
+        >
+        </p>
+
+      </div>
+
+
+      <!-- Profile Body -->
+
+      <div style="padding:20px">
+
+
+        <div
+          id="studentProfileInfo"
+          class="cards2"
+        >
+        </div>
+
+
+        <div
+          class="actions"
+          style="
+            justify-content:center;
+            margin-top:20px;
+          "
+        >
+
+          <button
+            class="btn"
+            onclick="printStudentProfile()"
+          >
+            🖨️ প্রোফাইল প্রিন্ট
+          </button>
+
+
+          <button
+            class="btn secondary"
+            onclick="closeStudentProfile()"
+          >
+            বন্ধ করুন
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  document.body.appendChild(modal);
+
+
+  modal.addEventListener(
+    "click",
+    function(event) {
+
+      if (event.target === modal) {
+
+        closeStudentProfile();
+
+      }
+
+    }
+  );
+
+
+  return modal;
+}
+
+
+/* =====================================================
+   VIEW STUDENT
+===================================================== */
+
+let currentProfileStudent = null;
+
+
+function viewStudent(id) {
+
+  const student =
+    allStudents.find(
+      s => String(s.id) === String(id)
+    );
+
+
+  if (!student) {
+
+    toast("❌ ছাত্রের তথ্য পাওয়া যায়নি");
+
+    return;
+  }
+
+
+  currentProfileStudent =
+    student;
+
+
+  const modal =
+    createStudentProfileModal();
+
+
+  const name =
+    student.student_name ||
+    student.name ||
+    "নাম নেই";
+
+
+  const className =
+    student.class_name ||
+    "শ্রেণি নেই";
+
+
+  const department =
+    student.department ||
+    "বিভাগ নেই";
+
+
+  const photoUrl =
+    student.photo_url ||
+    student.student_photo ||
+    student.photo ||
+    student.image_url ||
+    student.image ||
+    "";
+
+
+  document.getElementById(
+    "profileName"
+  ).textContent =
+    name;
+
+
+  document.getElementById(
+    "profileClass"
+  ).textContent =
+    className +
+    " • " +
+    department;
+
+
+  const photoBox =
+    document.getElementById(
+      "profilePhotoBox"
+    );
+
+
+  if (photoUrl) {
+
+    photoBox.innerHTML = `
+
+      <img
+        src="${safe(photoUrl)}"
+        alt="ছাত্রের ছবি"
+        style="
+          width:110px;
+          height:110px;
+          object-fit:cover;
+          border-radius:50%;
+          border:4px solid white;
+          box-shadow:0 4px 15px rgba(0,0,0,.25);
+        "
+        onerror="
+          this.style.display='none';
+          this.nextElementSibling.style.display='flex';
+        "
+      >
+
+      <div
+        style="
+          width:110px;
+          height:110px;
+          border-radius:50%;
+          background:white;
+          color:#075e54;
+          align-items:center;
+          justify-content:center;
+          font-size:50px;
+          margin:auto;
+          display:none;
+        "
+      >
+        👨‍🎓
+      </div>
+
+    `;
+
+  } else {
+
+    photoBox.innerHTML = `
+
+      <div
+        style="
+          width:110px;
+          height:110px;
+          border-radius:50%;
+          background:white;
+          color:#075e54;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:50px;
+          margin:auto;
+        "
+      >
+        👨‍🎓
+      </div>
+
+    `;
+
+  }
+
+
+  const gender =
+    student.gender === "female"
+      ? "মেয়ে"
+      : "ছেলে";
+
+
+  let residence =
+    student.residential_status ||
+    "";
+
+
+  if (residence === "residential") {
+    residence = "আবাসিক";
+  }
+
+  else if (residence === "non_residential") {
+    residence = "অনাবাসিক";
+  }
+
+
+  let statusText =
+    "সক্রিয়";
+
+
+  if (student.status === "inactive") {
+    statusText = "নিষ্ক্রিয়";
+  }
+
+  else if (student.status === "left") {
+    statusText = "ছেড়ে দিয়েছে";
+  }
+
+
+  const info =
+    document.getElementById(
+      "studentProfileInfo"
+    );
+
+
+  info.innerHTML = `
+
+    <div class="info">
+      <h3>🆔 পরিচয়</h3>
+      <p>
+        <b>রোল:</b>
+        ${safe(student.roll_no || "—")}
+      </p>
+      <p>
+        <b>ভর্তি নম্বর:</b>
+        ${safe(
+          student.admission_number ||
+          student.admission_no ||
+          "—"
+        )}
+      </p>
+    </div>
+
+
+    <div class="info">
+      <h3>📚 শিক্ষা</h3>
+      <p>
+        <b>শ্রেণি:</b>
+        ${safe(className)}
+      </p>
+      <p>
+        <b>বিভাগ:</b>
+        ${safe(department)}
+      </p>
+      <p>
+        <b>শাখা:</b>
+        ${safe(student.section || "—")}
+      </p>
+    </div>
+
+
+    <div class="info">
+      <h3>👤 ব্যক্তিগত তথ্য</h3>
+      <p>
+        <b>লিঙ্গ:</b>
+        ${safe(gender)}
+      </p>
+      <p>
+        <b>জন্ম তারিখ:</b>
+        ${safe(student.date_of_birth || "—")}
+      </p>
+      <p>
+        <b>রক্তের গ্রুপ:</b>
+        ${safe(student.blood_group || "—")}
+      </p>
+    </div>
+
+
+    <div class="info">
+      <h3>👨‍👩‍👦 পরিবার</h3>
+      <p>
+        <b>পিতা:</b>
+        ${safe(student.father_name || "—")}
+      </p>
+      <p>
+        <b>মাতা:</b>
+        ${safe(student.mother_name || "—")}
+      </p>
+    </div>
+
+
+    <div class="info">
+      <h3>📱 যোগাযোগ</h3>
+      <p>
+        <b>মোবাইল:</b>
+        ${safe(student.phone || "—")}
+      </p>
+    </div>
+
+
+    <div class="info">
+      <h3>📅 ভর্তি তথ্য</h3>
+      <p>
+        <b>ভর্তি তারিখ:</b>
+        ${safe(student.admission_date || "—")}
+      </p>
+      <p>
+        <b>আবাসন:</b>
+        ${safe(residence || "—")}
+      </p>
+      <p>
+        <b>Status:</b>
+        ${safe(statusText)}
+      </p>
+    </div>
+
+
+    <div
+      class="info"
+      style="grid-column:1/-1"
+    >
+      <h3>🏠 বর্তমান ঠিকানা</h3>
+      <p>
+        ${safe(
+          student.present_address ||
+          student.address ||
+          "ঠিকানা দেওয়া হয়নি"
+        )}
+      </p>
+    </div>
+
+
+    <div
+      class="info"
+      style="grid-column:1/-1"
+    >
+      <h3>🏠 স্থায়ী ঠিকানা</h3>
+      <p>
+        ${safe(
+          student.permanent_address ||
+          "স্থায়ী ঠিকানা দেওয়া হয়নি"
+        )}
+      </p>
+    </div>
+
+  `;
+
+
+  modal.style.display =
+    "block";
+
+
+  document.body.style.overflow =
+    "hidden";
+}
+
+
+/* =====================================================
+   CLOSE PROFILE
+===================================================== */
+
+function closeStudentProfile() {
+
+  const modal =
+    document.getElementById(
+      "studentProfileModal"
+    );
+
+
+  if (modal) {
+
+    modal.style.display =
+      "none";
+
+  }
+
+
+  document.body.style.overflow =
+    "";
+}
+
+
+/* =====================================================
+   PRINT STUDENT PROFILE
+===================================================== */
+
+function printStudentProfile() {
+
+  const student =
+    currentProfileStudent;
+
+
+  if (!student) {
+
+    toast("❌ ছাত্রের তথ্য পাওয়া যায়নি");
+
+    return;
+  }
+
+
+  const name =
+    student.student_name ||
+    student.name ||
+    "—";
+
+
+  const photoUrl =
+    student.photo_url ||
+    student.student_photo ||
+    student.photo ||
+    student.image_url ||
+    student.image ||
+    "";
+
+
+  const gender =
+    student.gender === "female"
+      ? "মেয়ে"
+      : "ছেলে";
+
+
+  let residence =
+    student.residential_status ||
+    "—";
+
+
+  if (residence === "residential") {
+    residence = "আবাসিক";
+  }
+
+  else if (residence === "non_residential") {
+    residence = "অনাবাসিক";
+  }
+
+
+  let statusText =
+    "সক্রিয়";
+
+
+  if (student.status === "inactive") {
+    statusText = "নিষ্ক্রিয়";
+  }
+
+  else if (student.status === "left") {
+    statusText = "ছেড়ে দিয়েছে";
+  }
+
+
+  const photo =
+    photoUrl
+
+      ? `
+        <img
+          src="${safe(photoUrl)}"
+          style="
+            width:110px;
+            height:110px;
+            object-fit:cover;
+            border-radius:10px;
+          "
+        >
+      `
+
+      : `
+        <div
+          style="
+            width:110px;
+            height:110px;
+            border-radius:10px;
+            background:#eee;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:50px;
+          "
+        >
+          👨‍🎓
+        </div>
+      `;
+
+
+  const printWindow =
+    window.open(
+      "",
+      "_blank",
+      "width=900,height=700"
+    );
+
+
+  if (!printWindow) {
+
+    toast("❌ Print window খুলতে পারেনি");
+
+    return;
+  }
+
+
+  printWindow.document.write(`
+
+    <!DOCTYPE html>
+
+    <html lang="bn">
+
+    <head>
+
+      <meta charset="UTF-8">
+
+      <title>
+        ${safe(name)} - Student Profile
+      </title>
+
+      <style>
+
+        *{
+          box-sizing:border-box;
+        }
+
+        body{
+          font-family:
+            Arial,
+            "Noto Sans Bengali",
+            sans-serif;
+
+          padding:30px;
+          color:#172033;
+        }
+
+        .header{
+          text-align:center;
+          border-bottom:2px solid #075e54;
+          padding-bottom:15px;
+          margin-bottom:20px;
+        }
+
+        .header h1{
+          color:#075e54;
+          margin-bottom:5px;
+        }
+
+        .profile-top{
+          display:flex;
+          gap:25px;
+          align-items:center;
+          margin-bottom:25px;
+        }
+
+        .photo{
+          width:110px;
+          flex-shrink:0;
+        }
+
+        .name{
+          font-size:25px;
+          font-weight:bold;
+          color:#075e54;
+        }
+
+        .grid{
+          display:grid;
+          grid-template-columns:
+            repeat(2,1fr);
+          gap:12px;
+        }
+
+        .item{
+          border:1px solid #ddd;
+          border-radius:8px;
+          padding:10px;
+        }
+
+        .item b{
+          color:#075e54;
+        }
+
+        .full{
+          grid-column:1/-1;
+        }
+
+        @media print{
+
+          body{
+            padding:10px;
+          }
+
+        }
+
+      </style>
+
+    </head>
+
+
+    <body>
+
+      <div class="header">
+
+        <h1>
+          কল্যাণপুর এমদাদুল উলুম
+          কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
+        </h1>
+
+        <p>
+          ছাত্র পরিচয় / Student Profile
+        </p>
+
+      </div>
+
+
+      <div class="profile-top">
+
+        <div class="photo">
+          ${photo}
+        </div>
+
+        <div>
+
+          <div class="name">
+            ${safe(name)}
+          </div>
+
+          <div>
+            শ্রেণি:
+            ${safe(student.class_name || "—")}
+          </div>
+
+          <div>
+            বিভাগ:
+            ${safe(student.department || "—")}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="grid">
+
+        <div class="item">
+          <b>রোল:</b>
+          ${safe(student.roll_no || "—")}
+        </div>
+
+        <div class="item">
+          <b>ভর্তি নম্বর:</b>
+          ${safe(
+            student.admission_number ||
+            student.admission_no ||
+            "—"
+          )}
+        </div>
+
+        <div class="item">
+          <b>শাখা:</b>
+          ${safe(student.section || "—")}
+        </div>
+
+        <div class="item">
+          <b>লিঙ্গ:</b>
+          ${safe(gender)}
+        </div>
+
+        <div class="item">
+          <b>জন্ম তারিখ:</b>
+          ${safe(student.date_of_birth || "—")}
+        </div>
+
+        <div class="item">
+          <b>রক্তের গ্রুপ:</b>
+          ${safe(student.blood_group || "—")}
+        </div>
+
+        <div class="item">
+          <b>পিতার নাম:</b>
+          ${safe(student.father_name || "—")}
+        </div>
+
+        <div class="item">
+          <b>মাতার নাম:</b>
+          ${safe(student.mother_name || "—")}
+        </div>
+
+        <div class="item">
+          <b>মোবাইল:</b>
+          ${safe(student.phone || "—")}
+        </div>
+
+        <div class="item">
+          <b>ভর্তি তারিখ:</b>
+          ${safe(student.admission_date || "—")}
+        </div>
+
+        <div class="item">
+          <b>আবাসন:</b>
+          ${safe(residence)}
+        </div>
+
+        <div class="item">
+          <b>Status:</b>
+          ${safe(statusText)}
+        </div>
+
+        <div class="item full">
+          <b>বর্তমান ঠিকানা:</b><br>
+          ${safe(
+            student.present_address ||
+            student.address ||
+            "—"
+          )}
+        </div>
+
+        <div class="item full">
+          <b>স্থায়ী ঠিকানা:</b><br>
+          ${safe(
+            student.permanent_address ||
+            "—"
+          )}
+        </div>
+
+      </div>
+
+
+      <script>
+
+        window.onload = function(){
+
+          window.print();
+
+        };
+
+      <\/script>
+
+
+    </body>
+
+    </html>
+
+  `);
+
+
+  printWindow.document.close();
 }
 
 
