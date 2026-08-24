@@ -2828,7 +2828,645 @@ document.addEventListener(
 
   }
 );
+/* =====================================================
+   STUDENT ID CARD PRINT
+   FRONT + BACK
+===================================================== */
 
+function printStudentIDCard() {
+
+  const student =
+    currentProfileStudent;
+
+  if (!student) {
+    toast("❌ ছাত্রের তথ্য পাওয়া যায়নি");
+    return;
+  }
+
+  const name =
+    student.student_name ||
+    student.name ||
+    "—";
+
+  const photoUrl =
+    student.photo_url ||
+    student.student_photo ||
+    student.photo ||
+    student.image_url ||
+    student.image ||
+    "";
+
+  const gender =
+    student.gender === "female"
+      ? "মেয়ে"
+      : "ছেলে";
+
+  let residence =
+    student.residential_status || "—";
+
+  if (residence === "residential") {
+    residence = "আবাসিক";
+  }
+
+  if (residence === "non_residential") {
+    residence = "অনাবাসিক";
+  }
+
+  const photo = photoUrl
+    ? `
+      <img
+        src="${safe(photoUrl)}"
+        class="student-photo"
+      >
+    `
+    : `
+      <div class="student-photo no-photo">
+        👨‍🎓
+      </div>
+    `;
+
+  const printWindow =
+    window.open(
+      "",
+      "_blank",
+      "width=1000,height=800"
+    );
+
+  if (!printWindow) {
+    toast("❌ Print window খুলতে পারেনি");
+    return;
+  }
+
+  printWindow.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+${safe(name)} - ID Card
+</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+@page{
+  size:A4;
+  margin:10mm;
+}
+
+body{
+  margin:0;
+  padding:0;
+  background:#eee;
+  font-family:
+    Arial,
+    "Noto Sans Bengali",
+    sans-serif;
+}
+
+/* ==============================
+   PRINT AREA
+============================== */
+
+.print-area{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+/* ==============================
+   ID CARD
+============================== */
+
+.id-card{
+
+  width:85.6mm;
+  height:54mm;
+
+  border-radius:5mm;
+
+  overflow:hidden;
+
+  position:relative;
+
+  background:white;
+
+  box-shadow:
+    0 3px 15px rgba(0,0,0,.25);
+
+  border:1px solid #075e54;
+
+  page-break-inside:avoid;
+}
+
+/* ==============================
+   FRONT
+============================== */
+
+.front{
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f0faf6 100%
+    );
+
+}
+
+/* Top Header */
+
+.card-header{
+
+  height:14mm;
+
+  background:
+    linear-gradient(
+      135deg,
+      #075e54,
+      #087f5b
+    );
+
+  color:white;
+
+  text-align:center;
+
+  padding:2.5mm 3mm;
+
+}
+
+.card-header h1{
+
+  font-size:10px;
+
+  margin:0;
+
+  line-height:1.4;
+
+  font-weight:bold;
+
+}
+
+.card-header p{
+
+  font-size:7px;
+
+  margin:1mm 0 0;
+
+  opacity:.9;
+
+}
+
+/* Student Area */
+
+.student-area{
+
+  display:flex;
+
+  gap:3mm;
+
+  padding:3mm;
+
+}
+
+/* Photo */
+
+.student-photo{
+
+  width:25mm;
+  height:30mm;
+
+  object-fit:cover;
+
+  border-radius:2mm;
+
+  border:1px solid #087f5b;
+
+  background:#e8f7f1;
+
+  flex-shrink:0;
+
+}
+
+.no-photo{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:22px;
+
+}
+
+/* Student Info */
+
+.student-info{
+
+  flex:1;
+
+  min-width:0;
+
+}
+
+.student-name{
+
+  font-size:13px;
+
+  font-weight:bold;
+
+  color:#075e54;
+
+  margin-bottom:2mm;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+}
+
+.info-row{
+
+  display:flex;
+
+  font-size:7.5px;
+
+  line-height:1.7;
+
+}
+
+.info-row b{
+
+  width:19mm;
+
+  color:#075e54;
+
+}
+
+/* Card Footer */
+
+.card-footer{
+
+  position:absolute;
+
+  bottom:0;
+
+  left:0;
+
+  right:0;
+
+  height:6mm;
+
+  background:#075e54;
+
+  color:white;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:6.5px;
+
+}
+
+/* ==============================
+   BACK SIDE
+============================== */
+
+.back{
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #f0faf6
+    );
+
+  padding:4mm;
+
+}
+
+.back-title{
+
+  text-align:center;
+
+  color:#075e54;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  padding-bottom:2mm;
+
+  border-bottom:1px solid #087f5b;
+
+  margin-bottom:3mm;
+
+}
+
+.back-info{
+
+  font-size:7.5px;
+
+  line-height:1.8;
+
+}
+
+.back-info b{
+
+  color:#075e54;
+
+}
+
+/* Address */
+
+.address{
+
+  margin-top:2mm;
+
+  padding:2mm;
+
+  background:#f4f9f7;
+
+  border-radius:2mm;
+
+  font-size:7px;
+
+  line-height:1.5;
+
+}
+
+/* Signatures */
+
+.signatures{
+
+  position:absolute;
+
+  bottom:5mm;
+
+  left:4mm;
+
+  right:4mm;
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:5mm;
+
+}
+
+.signature{
+
+  text-align:center;
+
+  font-size:6.5px;
+
+  color:#333;
+
+}
+
+.signature-line{
+
+  border-top:1px solid #333;
+
+  margin-bottom:1mm;
+
+}
+
+/* Print */
+
+@media print{
+
+  body{
+
+    background:white;
+
+  }
+
+  .print-area{
+
+    gap:8mm;
+
+  }
+
+  .id-card{
+
+    box-shadow:none;
+
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="print-area">
+
+<!-- =====================================
+     FRONT SIDE
+===================================== -->
+
+<div class="id-card front">
+
+  <div class="card-header">
+
+    <h1>
+      কল্যাণপুর এমদাদুল উলুম
+      কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
+    </h1>
+
+    <p>
+      ছাত্র পরিচয়পত্র • স্থাপিত ১৯৯৬
+    </p>
+
+  </div>
+
+  <div class="student-area">
+
+    ${photo}
+
+    <div class="student-info">
+
+      <div class="student-name">
+        ${safe(name)}
+      </div>
+
+      <div class="info-row">
+        <b>রোল:</b>
+        <span>
+          ${safe(student.roll_no || "—")}
+        </span>
+      </div>
+
+      <div class="info-row">
+        <b>ভর্তি নং:</b>
+        <span>
+          ${safe(
+            student.admission_number ||
+            student.admission_no ||
+            "—"
+          )}
+        </span>
+      </div>
+
+      <div class="info-row">
+        <b>বিভাগ:</b>
+        <span>
+          ${safe(student.department || "—")}
+        </span>
+      </div>
+
+      <div class="info-row">
+        <b>জামাত:</b>
+        <span>
+          ${safe(student.class_name || "—")}
+        </span>
+      </div>
+
+      <div class="info-row">
+        <b>আবাসন:</b>
+        <span>
+          ${safe(residence)}
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card-footer">
+    কল্যাণপুর • বগুড়া
+  </div>
+
+</div>
+
+
+<!-- =====================================
+     BACK SIDE
+===================================== -->
+
+<div class="id-card back">
+
+  <div class="back-title">
+    ছাত্রের পরিচয় ও যোগাযোগ
+  </div>
+
+  <div class="back-info">
+
+    <div>
+      <b>পিতার নাম:</b>
+      ${safe(student.father_name || "—")}
+    </div>
+
+    <div>
+      <b>মাতার নাম:</b>
+      ${safe(student.mother_name || "—")}
+    </div>
+
+    <div>
+      <b>মোবাইল:</b>
+      ${safe(student.phone || "—")}
+    </div>
+
+    <div>
+      <b>জন্ম তারিখ:</b>
+      ${safe(student.date_of_birth || "—")}
+    </div>
+
+    <div>
+      <b>রক্তের গ্রুপ:</b>
+      ${safe(student.blood_group || "—")}
+    </div>
+
+  </div>
+
+  <div class="address">
+
+    <b>বর্তমান ঠিকানা:</b>
+    ${safe(
+      student.present_address ||
+      student.address ||
+      "—"
+    )}
+
+    <br>
+
+    <b>স্থায়ী ঠিকানা:</b>
+    ${safe(
+      student.permanent_address ||
+      "—"
+    )}
+
+  </div>
+
+
+  <!-- Signatures -->
+
+  <div class="signatures">
+
+    <div class="signature">
+
+      <div class="signature-line"></div>
+
+      মুহতামিম সাহেব
+
+    </div>
+
+    <div class="signature">
+
+      <div class="signature-line"></div>
+
+      নাজেমে তালিমাত সাহেব
+
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+window.onload = function(){
+
+  setTimeout(function(){
+
+    window.print();
+
+  },500);
+
+};
+
+<\/script>
+
+</body>
+
+</html>
+
+  `);
+
+  printWindow.document.close();
+}
 </script>
 
 </body>
