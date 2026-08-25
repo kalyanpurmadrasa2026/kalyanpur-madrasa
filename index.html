@@ -413,19 +413,554 @@ footer{
 </div>
 </section>
 
-<!-- ফি -->
-<section id="fees" class="panel hidden">
-<h2>💰 বেতন ও ফি ব্যবস্থাপনা</h2>
-<div class="cards2">
-<div class="info"><h3>মাসিক বেতন</h3><p>ছাত্রভেদে ফি নির্ধারণ ও জমা নেওয়া যাবে।</p></div>
-<div class="info"><h3>বকেয়া</h3><p>কোন ছাত্রের কত টাকা বাকি তা দেখা যাবে।</p></div>
-<div class="info"><h3>রসিদ</h3><p>পেমেন্টের রসিদ তৈরি ও প্রিন্টের ব্যবস্থা থাকবে।</p></div>
-</div>
-<div class="actions">
-<button class="btn" onclick="toast('বেতন মডিউল প্রস্তুত করা হয়েছে')">💳 নতুন পেমেন্ট</button>
-<button class="btn secondary" onclick="toast('বকেয়া রিপোর্ট প্রস্তুত করা হবে')">📋 বকেয়া রিপোর্ট</button>
-</div>
+<!-- ==================== FEES MODULE ==================== -->
+<section id="fees" class="page-section">
+
+  <div class="section-header">
+    <div>
+      <h2>💰 ছাত্রদের ফি ব্যবস্থাপনা</h2>
+      <p>মাসিক ফি, জমা ও বকেয়া হিসাব</p>
+    </div>
+
+    <button onclick="openFeeForm()" class="primary-btn">
+      ➕ নতুন ফি যোগ করুন
+    </button>
+  </div>
+
+  <!-- Fee Summary -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div>
+        <h3 id="totalFeeAmount">৳0</h3>
+        <p>মোট ফি</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div>
+        <h3 id="totalPaidAmount">৳0</h3>
+        <p>মোট জমা</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⚠️</div>
+      <div>
+        <h3 id="totalDueAmount">৳0</h3>
+        <p>মোট বাকি</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Search -->
+  <div class="search-box" style="margin:20px 0;">
+    <input
+      type="text"
+      id="feeSearch"
+      placeholder="🔍 ছাত্রের নাম দিয়ে খুঁজুন..."
+      oninput="searchFees()"
+    >
+  </div>
+
+  <!-- Fee Table -->
+  <div class="table-container">
+
+    <table>
+      <thead>
+        <tr>
+          <th>ক্রমিক</th>
+          <th>ছাত্রের নাম</th>
+          <th>শ্রেণি</th>
+          <th>মাস</th>
+          <th>ফি</th>
+          <th>জমা</th>
+          <th>বাকি</th>
+          <th>তারিখ</th>
+          <th>অবস্থা</th>
+          <th>অ্যাকশন</th>
+        </tr>
+      </thead>
+
+      <tbody id="feesTableBody">
+        <tr>
+          <td colspan="10" style="text-align:center;">
+            ফি-এর তথ্য লোড হচ্ছে...
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+
 </section>
+
+
+<!-- ==================== ADD FEE MODAL ==================== -->
+
+<div id="feeModal"
+     class="modal"
+     style="display:none;">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h2>➕ নতুন ফি যোগ করুন</h2>
+
+      <button onclick="closeFeeForm()">
+        ✕
+      </button>
+    </div>
+
+    <form id="feeForm">
+
+      <div class="form-group">
+        <label>ছাত্রের নাম</label>
+
+        <input
+          type="text"
+          id="feeStudentName"
+          required
+          placeholder="ছাত্রের নাম লিখুন"
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label>শ্রেণি</label>
+
+        <input
+          type="text"
+          id="feeClass"
+          placeholder="শ্রেণির নাম"
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label>মাস</label>
+
+        <select id="feeMonth" required>
+
+          <option value="">মাস নির্বাচন করুন</option>
+
+          <option>জানুয়ারি</option>
+          <option>ফেব্রুয়ারি</option>
+          <option>মার্চ</option>
+          <option>এপ্রিল</option>
+          <option>মে</option>
+          <option>জুন</option>
+          <option>জুলাই</option>
+          <option>আগস্ট</option>
+          <option>সেপ্টেম্বর</option>
+          <option>অক্টোবর</option>
+          <option>নভেম্বর</option>
+          <option>ডিসেম্বর</option>
+
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label>ফি-এর ধরন</label>
+
+        <select id="feeType">
+
+          <option value="মাসিক বেতন">
+            মাসিক বেতন
+          </option>
+
+          <option value="ভর্তি ফি">
+            ভর্তি ফি
+          </option>
+
+          <option value="পরীক্ষার ফি">
+            পরীক্ষার ফি
+          </option>
+
+          <option value="অন্যান্য">
+            অন্যান্য
+          </option>
+
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label>মোট ফি</label>
+
+        <input
+          type="number"
+          id="feeAmount"
+          min="0"
+          required
+          placeholder="যেমন: 500"
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label>জমা</label>
+
+        <input
+          type="number"
+          id="feePaid"
+          min="0"
+          value="0"
+          required
+          placeholder="যেমন: 300"
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label>নোট</label>
+
+        <textarea
+          id="feeNote"
+          placeholder="প্রয়োজনে নোট লিখুন"
+        ></textarea>
+      </div>
+
+
+      <div style="display:flex;gap:10px;margin-top:20px;">
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          💾 সংরক্ষণ
+        </button>
+
+        <button
+          type="button"
+          onclick="closeFeeForm()"
+          class="secondary-btn"
+        >
+          বাতিল
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* ==================== FEES SYSTEM ==================== */
+
+let allFees = [];
+
+
+/* Open Form */
+
+function openFeeForm() {
+
+  document.getElementById("feeModal").style.display = "flex";
+
+}
+
+
+/* Close Form */
+
+function closeFeeForm() {
+
+  document.getElementById("feeModal").style.display = "none";
+
+  document.getElementById("feeForm").reset();
+
+}
+
+
+/* Load Fees */
+
+async function loadFees() {
+
+  try {
+
+    const { data, error } =
+      await supabase
+      .from("fees")
+      .select("*")
+      .order("id", { ascending:false });
+
+    if (error) {
+
+      console.error(error);
+
+      return;
+
+    }
+
+    allFees = data || [];
+
+    renderFees(allFees);
+
+    updateFeeSummary(allFees);
+
+  }
+
+  catch(error) {
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* Render Fees */
+
+function renderFees(data) {
+
+  const tbody =
+    document.getElementById("feesTableBody");
+
+  if (!data.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10"
+            style="text-align:center;">
+          এখনো কোনো ফি-এর তথ্য নেই।
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+
+  tbody.innerHTML = data.map((fee,index) => {
+
+    const status =
+      Number(fee.due_amount) <= 0
+      ? "Paid"
+      : "Due";
+
+
+    return `
+
+      <tr>
+
+        <td>${index + 1}</td>
+
+        <td>${fee.student_name || ""}</td>
+
+        <td>${fee.class || ""}</td>
+
+        <td>${fee.month || ""}</td>
+
+        <td>৳${Number(fee.amount || 0)}</td>
+
+        <td>৳${Number(fee.paid_amount || 0)}</td>
+
+        <td>৳${Number(fee.due_amount || 0)}</td>
+
+        <td>${fee.payment_date || ""}</td>
+
+        <td>
+          ${status === "Paid"
+            ? "✅ জমা"
+            : "⚠️ বাকি"}
+        </td>
+
+        <td>
+
+          <button
+            onclick="deleteFee(${fee.id})"
+            style="color:red;"
+          >
+            🗑️
+          </button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }).join("");
+
+}
+
+
+/* Add Fee */
+
+document
+.getElementById("feeForm")
+.addEventListener("submit", async function(e) {
+
+  e.preventDefault();
+
+
+  const amount =
+    Number(document.getElementById("feeAmount").value || 0);
+
+  const paid =
+    Number(document.getElementById("feePaid").value || 0);
+
+  const due =
+    Math.max(amount - paid, 0);
+
+
+  const feeData = {
+
+    student_name:
+      document.getElementById("feeStudentName").value,
+
+    class:
+      document.getElementById("feeClass").value,
+
+    month:
+      document.getElementById("feeMonth").value,
+
+    fee_type:
+      document.getElementById("feeType").value,
+
+    amount: amount,
+
+    paid_amount: paid,
+
+    due_amount: due,
+
+    status:
+      due <= 0 ? "Paid" : "Unpaid",
+
+    note:
+      document.getElementById("feeNote").value
+
+  };
+
+
+  const { error } =
+    await supabase
+    .from("fees")
+    .insert([feeData]);
+
+
+  if (error) {
+
+    alert("❌ তথ্য সংরক্ষণ হয়নি।");
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  alert("✅ ফি-এর তথ্য সফলভাবে সংরক্ষণ হয়েছে।");
+
+  closeFeeForm();
+
+  loadFees();
+
+});
+
+
+/* Delete Fee */
+
+async function deleteFee(id) {
+
+  if (!confirm("এই ফি-এর তথ্য মুছে ফেলবেন?")) {
+    return;
+  }
+
+
+  const { error } =
+    await supabase
+    .from("fees")
+    .delete()
+    .eq("id", id);
+
+
+  if (error) {
+
+    alert("❌ মুছে ফেলা যায়নি।");
+
+    console.error(error);
+
+    return;
+
+  }
+
+
+  loadFees();
+
+}
+
+
+/* Search */
+
+function searchFees() {
+
+  const search =
+    document
+    .getElementById("feeSearch")
+    .value
+    .toLowerCase();
+
+
+  const filtered =
+    allFees.filter(fee =>
+      (fee.student_name || "")
+      .toLowerCase()
+      .includes(search)
+    );
+
+
+  renderFees(filtered);
+
+}
+
+
+/* Summary */
+
+function updateFeeSummary(data) {
+
+  let total = 0;
+  let paid = 0;
+  let due = 0;
+
+
+  data.forEach(fee => {
+
+    total += Number(fee.amount || 0);
+
+    paid += Number(fee.paid_amount || 0);
+
+    due += Number(fee.due_amount || 0);
+
+  });
+
+
+  document.getElementById("totalFeeAmount")
+    .innerText = "৳" + total;
+
+  document.getElementById("totalPaidAmount")
+    .innerText = "৳" + paid;
+
+  document.getElementById("totalDueAmount")
+    .innerText = "৳" + due;
+
+}
+
+
+/* Load Automatically */
+
+loadFees();
+
+</script>
 
 <!-- উপস্থিতি -->
 <section id="attendance" class="panel hidden">
