@@ -2885,20 +2885,14 @@ function printStudentIDCard() {
       </div>
     `;
 
-  const printWindow =
-    window.open(
-      "",
-      "_blank",
-      "width=1000,height=800"
-    );
+  const printWindow = window.open("", "_blank");
 
-  if (!printWindow) {
-    toast("❌ Print window খুলতে পারেনি");
-    return;
-  }
+if (!printWindow) {
+  toast("❌ ID Card খুলতে পারেনি। Browser popup অনুমতি দিন।");
+  return;
+}
 
-  printWindow.document.write(`
-
+printWindow.document.write(`
 <!DOCTYPE html>
 
 <html lang="bn">
