@@ -216,6 +216,7 @@ footer{
 <thead>
 <tr>
 <th>ক্রম</th>
+<th>ছবি</th>
 <th>নাম</th>
 <th>রোল</th>
 <th>ভর্তি নম্বর</th>
@@ -2364,12 +2365,19 @@ async function editStudent(id) {
     "";
 
 
-  document.getElementById("s_class").value =
-    student.class_name || "";
-
-
   document.getElementById("s_department").value =
     student.department || "";
+
+
+/* বিভাগ অনুযায়ী শ্রেণির তালিকা তৈরি */
+
+updateClassOptions();
+
+
+/* এরপর ছাত্রের বর্তমান শ্রেণি নির্বাচন */
+
+document.getElementById("s_class").value =
+    student.class_name || "";
 
 
   document.getElementById("s_section").value =
@@ -2414,7 +2422,8 @@ async function editStudent(id) {
 
   document.getElementById("s_address").value =
     student.present_address || "";
-
+document.getElementById("s_permanent_address").value =
+    student.permanent_address || "";
 
   showPanel("addStudent");
 
@@ -2445,6 +2454,11 @@ async function editStudent(id) {
    UPDATE STUDENT
 ===================================================== */
 
+/* =====================================================
+   UPDATE STUDENT
+   তথ্য + ছবি Upload + Permanent Address
+===================================================== */
+
 async function updateStudent(id) {
 
   const name =
@@ -2469,96 +2483,278 @@ async function updateStudent(id) {
       .trim();
 
 
-  const data = {
+  /* =====================================================
+     EXISTING STUDENT
+  ===================================================== */
 
-    student_name: name,
+  const oldStudent =
+    allStudents.find(
+      s => String(s.id) === String(id)
+    );
 
-    roll_no:
-      document
-        .getElementById("s_roll")
-        .value
-        .trim(),
 
-    admission_no: admission,
+  if (!oldStudent) {
 
-    admission_number: admission,
+    toast("❌ ছাত্রের পুরনো তথ্য পাওয়া যায়নি");
 
-    class_name:
-      document
-        .getElementById("s_class")
-        .value,
+    return;
+  }
 
-    department:
-      document
-        .getElementById("s_department")
-        .value,
 
-    section:
-      document
-        .getElementById("s_section")
-        .value
-        .trim(),
+  /* =====================================================
+     EXISTING PHOTO
+  ===================================================== */
 
-    gender:
-      document
-        .getElementById("s_gender")
-        .value,
+  let photoUrl =
+    oldStudent.photo_url ||
+    oldStudent.student_photo ||
+    oldStudent.photo ||
+    oldStudent.image_url ||
+    oldStudent.image ||
+    "";
 
-    date_of_birth:
-      document
-        .getElementById("s_dob")
-        .value || null,
 
-    father_name:
-      document
-        .getElementById("s_father")
-        .value
-        .trim(),
+  /* =====================================================
+     PHOTO INPUT
+  ===================================================== */
 
-    mother_name:
-      document
-        .getElementById("s_mother")
-        .value
-        .trim(),
-
-    phone:
-      document
-        .getElementById("s_phone")
-        .value
-        .trim(),
-
-    blood_group:
-      document
-        .getElementById("s_blood")
-        .value,
-
-    present_address:
-      document
-        .getElementById("s_address")
-        .value
-        .trim(),
-
-    admission_date:
-      document
-        .getElementById("s_admission_date")
-        .value || null,
-
-    residential_status:
-      document
-        .getElementById("s_residence")
-        .value,
-
-    status:
-      document
-        .getElementById("s_status")
-        .value,
-
-    updated_at:
-      new Date().toISOString()
-  };
+  const photoInput =
+    document.getElementById("s_photo");
 
 
   try {
+
+    /* =====================================================
+       1. NEW PHOTO UPLOAD
+    ===================================================== */
+
+    if (
+      photoInput &&
+      photoInput.files &&
+      photoInput.files.length > 0
+    ) {
+
+      const photoFile =
+        photoInput.files[0];
+
+
+      /* File Extension */
+
+      const fileExt =
+        photoFile.name
+          .split(".")
+          .pop()
+          .toLowerCase();
+
+
+      /* Safe Unique File Name */
+
+      const fileName =
+        INSTITUTION_ID +
+        "_" +
+        Date.now() +
+        "_" +
+        Math.random()
+          .toString(36)
+          .substring(2, 8) +
+        "." +
+        fileExt;
+
+
+      /* Upload URL */
+
+      const uploadUrl =
+        SUPABASE_URL +
+        "/storage/v1/object/student-photos/" +
+        fileName;
+
+
+      const uploadResponse =
+        await fetch(
+          uploadUrl,
+          {
+            method: "POST",
+
+            headers: {
+
+              "apikey":
+                SUPABASE_KEY,
+
+              "Authorization":
+                "Bearer " + SUPABASE_KEY,
+
+              "Content-Type":
+                photoFile.type,
+
+              "x-upsert":
+                "false"
+            },
+
+            body:
+              photoFile
+          }
+        );
+
+
+      if (!uploadResponse.ok) {
+
+        const uploadError =
+          await uploadResponse.text();
+
+
+        throw new Error(
+          "নতুন ছবি Upload করা যায়নি: " +
+          uploadError
+        );
+      }
+
+
+      /* New Public Photo URL */
+
+      photoUrl =
+        SUPABASE_URL +
+        "/storage/v1/object/public/student-photos/" +
+        fileName;
+
+    }
+
+
+    /* =====================================================
+       2. STUDENT DATA
+    ===================================================== */
+
+    const data = {
+
+      student_name:
+        name,
+
+
+      roll_no:
+        document
+          .getElementById("s_roll")
+          .value
+          .trim(),
+
+
+      admission_no:
+        admission,
+
+
+      admission_number:
+        admission,
+
+
+      class_name:
+        document
+          .getElementById("s_class")
+          .value,
+
+
+      department:
+        document
+          .getElementById("s_department")
+          .value,
+
+
+      section:
+        document
+          .getElementById("s_section")
+          .value
+          .trim(),
+
+
+      gender:
+        document
+          .getElementById("s_gender")
+          .value,
+
+
+      date_of_birth:
+        document
+          .getElementById("s_dob")
+          .value || null,
+
+
+      father_name:
+        document
+          .getElementById("s_father")
+          .value
+          .trim(),
+
+
+      mother_name:
+        document
+          .getElementById("s_mother")
+          .value
+          .trim(),
+
+
+      phone:
+        document
+          .getElementById("s_phone")
+          .value
+          .trim(),
+
+
+      blood_group:
+        document
+          .getElementById("s_blood")
+          .value,
+
+
+      /* Current Address */
+
+      present_address:
+        document
+          .getElementById("s_address")
+          .value
+          .trim(),
+
+
+      /* Permanent Address */
+
+      permanent_address:
+        document
+          .getElementById(
+            "s_permanent_address"
+          )
+          .value
+          .trim(),
+
+
+      admission_date:
+        document
+          .getElementById("s_admission_date")
+          .value || null,
+
+
+      residential_status:
+        document
+          .getElementById("s_residence")
+          .value,
+
+
+      status:
+        document
+          .getElementById("s_status")
+          .value,
+
+
+      /* Photo */
+
+      photo_url:
+        photoUrl,
+
+
+      updated_at:
+        new Date().toISOString()
+
+    };
+
+
+    /* =====================================================
+       3. UPDATE DATABASE
+    ===================================================== */
 
     await supabaseRequest(
       "students?id=eq." + id,
@@ -2569,43 +2765,45 @@ async function updateStudent(id) {
     );
 
 
-    toast("✅ ছাত্রের তথ্য আপডেট হয়েছে");
+    /* =====================================================
+       SUCCESS
+    ===================================================== */
 
+    toast(
+      "✅ ছাত্রের তথ্য ও ছবি সফলভাবে আপডেট হয়েছে"
+    );
+
+
+    /* Clear Form */
 
     clearStudentForm();
 
 
-    const saveButton =
-      document.querySelector(
-        '#addStudent button[onclick="updateStudent(' + id + ')"]'
-      );
-
-
-    if (saveButton) {
-
-      saveButton.textContent =
-        "💾 ছাত্র সংরক্ষণ";
-
-      saveButton.onclick =
-        addStudent;
-    }
-
+    /* Reload Students */
 
     await loadDashboard();
 
+
+    /* Show Student List */
 
     showPanel("students");
 
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "Student Update Error:",
+      error
+    );
+
 
     toast(
       "❌ Update Error: " +
       error.message
     );
+
   }
+
 }
 
 
