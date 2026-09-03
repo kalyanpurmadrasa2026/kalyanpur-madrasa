@@ -2882,146 +2882,349 @@ async function openFeesPanel() {
     panel.className = "panel hidden";
 
     panel.innerHTML = `
-      <div style="padding:20px;">
+   <div style="
+  padding:25px;
+  max-width:1000px;
+  margin:auto;
+">
 
-        <h2>💰 বেতন / ফি</h2>
+  <h2 style="
+    text-align:center;
+    margin-bottom:25px;
+  ">
+    💰 বেতন / ফি ব্যবস্থাপনা
+  </h2>
 
-        <div class="form-group">
-          <label>ছাত্র নির্বাচন করুন</label>
+  <!-- =========================
+       ছাত্র নির্বাচন
+  ========================== -->
 
-          <select id="fee_student">
-            <option value="">ছাত্র নির্বাচন করুন</option>
-          </select>
-        </div>
+  <div style="
+    background:#f8faf9;
+    border:1px solid #d8e8e2;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:20px;
+  ">
 
-        <div class="form-group">
-          <label>মাস</label>
+    <h3>👨‍🎓 ছাত্রের তথ্য</h3>
 
-          <select id="fee_month">
-            <option value="">মাস নির্বাচন করুন</option>
-            <option value="জানুয়ারি">জানুয়ারি</option>
-            <option value="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
-            <option value="মার্চ">মার্চ</option>
-            <option value="এপ্রিল">এপ্রিল</option>
-            <option value="মে">মে</option>
-            <option value="জুন">জুন</option>
-            <option value="জুলাই">জুলাই</option>
-            <option value="আগস্ট">আগস্ট</option>
-            <option value="সেপ্টেম্বর">সেপ্টেম্বর</option>
-            <option value="অক্টোবর">অক্টোবর</option>
-            <option value="নভেম্বর">নভেম্বর</option>
-            <option value="ডিসেম্বর">ডিসেম্বর</option>
-          </select>
-        </div>
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px;
+    ">
 
-        <div class="form-group">
-          <label>মোট বেতন / ফি</label>
+      <div class="form-group">
 
-          <input
-            type="number"
-            id="fee_amount"
-            placeholder="মোট টাকা"
-            min="0"
-          >
-        </div>
+        <label>জামাত নির্বাচন করুন</label>
 
-        <div class="form-group">
-          <label>জমা দিয়েছে</label>
-
-          <input
-            type="number"
-            id="fee_paid_amount"
-            placeholder="জমা টাকা"
-            min="0"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>জমার তারিখ</label>
-
-          <input
-            type="date"
-            id="fee_payment_date"
-          >
-        </div>
-
-        <div class="form-group">
-          <label>অবস্থা</label>
-
-          <select id="fee_status">
-            <option value="পরিশোধিত">পরিশোধিত</option>
-            <option value="আংশিক">আংশিক</option>
-            <option value="বকেয়া">বকেয়া</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>নোট</label>
-
-          <textarea
-            id="fee_note"
-            rows="3"
-            placeholder="প্রয়োজনে নোট লিখুন"
-          ></textarea>
-        </div>
-
-        <div style="margin-top:15px;">
-
-          <button
-            class="btn"
-            onclick="saveFee()">
-            💾 বেতন / ফি সংরক্ষণ
-          </button>
-
-          <button
-            class="btn secondary"
-            onclick="showPanel('dashboard')">
-            ✖ বন্ধ করুন
-          </button>
-
-        </div>
-
-        <hr style="margin:25px 0;">
-
-        <h3>📋 ফি-এর তালিকা</h3>
-
-        <div style="overflow-x:auto;">
-
-          <table class="data-table">
-
-            <thead>
-
-              <tr>
-                <th>ক্রমিক</th>
-                <th>ছাত্র</th>
-                <th>রোল</th>
-                <th>মাস</th>
-                <th>মোট</th>
-                <th>জমা</th>
-                <th>বকেয়া</th>
-                <th>অবস্থা</th>
-                <th>তারিখ</th>
-                <th>মুছুন</th>
-              </tr>
-
-            </thead>
-
-            <tbody id="feeTableBody">
-
-              <tr>
-                <td colspan="10" style="text-align:center">
-                  কোনো তথ্য নেই
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
+        <select id="fee_class">
+          <option value="">জামাত নির্বাচন করুন</option>
+        </select>
 
       </div>
-    `;
+
+      <div class="form-group">
+
+        <label>রোল / ভর্তি নং / নাম খুঁজুন</label>
+
+        <input
+          type="text"
+          id="fee_student_search"
+          placeholder="রোল, ভর্তি নং অথবা নাম লিখুন"
+        >
+
+      </div>
+
+      <div class="form-group">
+
+        <label>ছাত্র নির্বাচন করুন</label>
+
+        <select id="fee_student">
+          <option value="">প্রথমে ছাত্র নির্বাচন করুন</option>
+        </select>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       ফি তথ্য
+  ========================== -->
+
+  <div style="
+    background:#f8faf9;
+    border:1px solid #d8e8e2;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:20px;
+  ">
+
+    <h3>💵 ফি-এর তথ্য</h3>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:15px;
+    ">
+
+      <div class="form-group">
+
+        <label>বছর</label>
+
+        <input
+          type="number"
+          id="fee_year"
+          placeholder="যেমন: ২০২৬"
+          value="2026"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>মাস</label>
+
+        <select id="fee_month">
+
+          <option value="">মাস নির্বাচন করুন</option>
+
+          <option value="জানুয়ারি">জানুয়ারি</option>
+          <option value="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
+          <option value="মার্চ">মার্চ</option>
+          <option value="এপ্রিল">এপ্রিল</option>
+          <option value="মে">মে</option>
+          <option value="জুন">জুন</option>
+          <option value="জুলাই">জুলাই</option>
+          <option value="আগস্ট">আগস্ট</option>
+          <option value="সেপ্টেম্বর">সেপ্টেম্বর</option>
+          <option value="অক্টোবর">অক্টোবর</option>
+          <option value="নভেম্বর">নভেম্বর</option>
+          <option value="ডিসেম্বর">ডিসেম্বর</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>মোট বেতন / ফি</label>
+
+        <input
+          type="number"
+          id="fee_amount"
+          placeholder="মোট টাকা"
+          min="0"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>জমা দিয়েছে</label>
+
+        <input
+          type="number"
+          id="fee_paid"
+          placeholder="জমার পরিমাণ"
+          min="0"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>জমাদাতার সম্পর্ক</label>
+
+        <select id="fee_payer_relation">
+
+          <option value="">নির্বাচন করুন</option>
+
+          <option value="বাবা">বাবা</option>
+          <option value="মা">মা</option>
+          <option value="ভাই">ভাই</option>
+          <option value="বোন">বোন</option>
+          <option value="চাচা">চাচা</option>
+          <option value="মামা">মামা</option>
+          <option value="অভিভাবক">অভিভাবক</option>
+          <option value="ছাত্র নিজে">ছাত্র নিজে</option>
+          <option value="অন্যান্য">অন্যান্য</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>জমাদাতার নাম</label>
+
+        <input
+          type="text"
+          id="fee_payer_name"
+          placeholder="যিনি টাকা জমা দিয়েছেন"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>জমার তারিখ</label>
+
+        <input
+          type="date"
+          id="fee_date"
+        >
+
+      </div>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>মন্তব্য</label>
+
+      <textarea
+        id="fee_note"
+        rows="3"
+        placeholder="প্রয়োজনে কোনো মন্তব্য লিখুন"
+      ></textarea>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       BUTTONS
+  ========================== -->
+
+  <div style="
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:25px;
+  ">
+
+    <button
+      class="btn"
+      onclick="saveFee()">
+      💾 বেতন / ফি সংরক্ষণ
+    </button>
+
+    <button
+      class="btn secondary"
+      onclick="showPanel('dashboard')">
+      ✖ বন্ধ করুন
+    </button>
+
+  </div>
+
+
+  <!-- =========================
+       FEE LIST
+  ========================== -->
+
+  <hr style="margin:25px 0;">
+
+  <h3>📋 ফি-এর তালিকা</h3>
+
+  <div style="overflow-x:auto;">
+
+    <table class="data-table">
+
+      <thead>
+
+        <tr>
+
+          <th>ক্রমিক</th>
+          <th>ছাত্র</th>
+          <th>রোল</th>
+          <th>জামাত</th>
+          <th>বছর</th>
+          <th>মাস</th>
+          <th>মোট</th>
+          <th>জমা</th>
+          <th>বকেয়া</th>
+          <th>জমাদাতা</th>
+          <th>তারিখ</th>
+          <th>অবস্থা</th>
+          <th>মুছুন</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody id="feeTableBody">
+
+        <tr>
+
+          <td
+            colspan="13"
+            style="text-align:center">
+            কোনো তথ্য নেই
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  <!-- =========================
+       PRINT / STATEMENT
+  ========================== -->
+
+  <div style="
+    margin-top:25px;
+    padding:20px;
+    background:#f8faf9;
+    border:1px solid #d8e8e2;
+    border-radius:12px;
+  ">
+
+    <h3>🖨️ হিসাব ও স্টেটমেন্ট</h3>
+
+    <p style="margin-bottom:15px;">
+      ছাত্রের মাসিক হিসাব, বকেয়া এবং বাৎসরিক স্টেটমেন্ট পরবর্তীতে এখান থেকে প্রিন্ট করা যাবে।
+    </p>
+
+    <div style="
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    ">
+
+      <button
+        class="btn secondary"
+        onclick="printFeeStatement()">
+        🖨️ স্টেটমেন্ট প্রিন্ট
+      </button>
+
+      <button
+        class="btn secondary"
+        onclick="printAnnualFeeStatement()">
+        📊 বাৎসরিক হিসাব প্রিন্ট
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
     const container =
       document.querySelector("main") ||
