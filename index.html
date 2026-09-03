@@ -2866,7 +2866,462 @@ function clearStudentForm() {
       addStudent;
   }
 }
+/* =====================================================
+   FEES / SALARY
+===================================================== */
 
+async function openFeesPanel() {
+
+  let panel = document.getElementById("fees");
+
+  if (!panel) {
+
+    panel = document.createElement("div");
+
+    panel.id = "fees";
+    panel.className = "panel hidden";
+
+    panel.innerHTML = `
+      <div style="padding:20px;">
+
+        <h2>💰 বেতন / ফি</h2>
+
+        <div class="form-group">
+          <label>ছাত্র নির্বাচন করুন</label>
+
+          <select id="fee_student">
+            <option value="">ছাত্র নির্বাচন করুন</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>মাস</label>
+
+          <select id="fee_month">
+            <option value="">মাস নির্বাচন করুন</option>
+            <option value="জানুয়ারি">জানুয়ারি</option>
+            <option value="ফেব্রুয়ারি">ফেব্রুয়ারি</option>
+            <option value="মার্চ">মার্চ</option>
+            <option value="এপ্রিল">এপ্রিল</option>
+            <option value="মে">মে</option>
+            <option value="জুন">জুন</option>
+            <option value="জুলাই">জুলাই</option>
+            <option value="আগস্ট">আগস্ট</option>
+            <option value="সেপ্টেম্বর">সেপ্টেম্বর</option>
+            <option value="অক্টোবর">অক্টোবর</option>
+            <option value="নভেম্বর">নভেম্বর</option>
+            <option value="ডিসেম্বর">ডিসেম্বর</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>মোট বেতন / ফি</label>
+
+          <input
+            type="number"
+            id="fee_amount"
+            placeholder="মোট টাকা"
+            min="0"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>জমা দিয়েছে</label>
+
+          <input
+            type="number"
+            id="fee_paid_amount"
+            placeholder="জমা টাকা"
+            min="0"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>জমার তারিখ</label>
+
+          <input
+            type="date"
+            id="fee_payment_date"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>অবস্থা</label>
+
+          <select id="fee_status">
+            <option value="পরিশোধিত">পরিশোধিত</option>
+            <option value="আংশিক">আংশিক</option>
+            <option value="বকেয়া">বকেয়া</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>নোট</label>
+
+          <textarea
+            id="fee_note"
+            rows="3"
+            placeholder="প্রয়োজনে নোট লিখুন"
+          ></textarea>
+        </div>
+
+        <div style="margin-top:15px;">
+
+          <button
+            class="btn"
+            onclick="saveFee()">
+            💾 বেতন / ফি সংরক্ষণ
+          </button>
+
+          <button
+            class="btn secondary"
+            onclick="showPanel('dashboard')">
+            ✖ বন্ধ করুন
+          </button>
+
+        </div>
+
+        <hr style="margin:25px 0;">
+
+        <h3>📋 ফি-এর তালিকা</h3>
+
+        <div style="overflow-x:auto;">
+
+          <table class="data-table">
+
+            <thead>
+
+              <tr>
+                <th>ক্রমিক</th>
+                <th>ছাত্র</th>
+                <th>রোল</th>
+                <th>মাস</th>
+                <th>মোট</th>
+                <th>জমা</th>
+                <th>বকেয়া</th>
+                <th>অবস্থা</th>
+                <th>তারিখ</th>
+                <th>মুছুন</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="feeTableBody">
+
+              <tr>
+                <td colspan="10" style="text-align:center">
+                  কোনো তথ্য নেই
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+    `;
+
+    const container =
+      document.querySelector("main") ||
+      document.body;
+
+    container.appendChild(panel);
+  }
+
+  showPanel("fees");
+
+  loadFeeStudents();
+
+  loadFeeHistory();
+}
+
+
+/* =====================================================
+   FEE STUDENT LIST
+===================================================== */
+
+function loadFeeStudents() {
+
+  const select =
+    document.getElementById("fee_student");
+
+  if (!select) return;
+
+  select.innerHTML =
+    '<option value="">ছাত্র নির্বাচন করুন</option>';
+
+  if (!Array.isArray(allStudents)) return;
+
+  allStudents.forEach(function(student) {
+
+    const option =
+      document.createElement("option");
+
+    option.value =
+      student.id;
+
+    option.textContent =
+      (student.student_name || "নাম নেই") +
+      " — রোল: " +
+      (student.roll_no || "");
+
+    option.dataset.name =
+      student.student_name || "";
+
+    option.dataset.roll =
+      student.roll_no || "";
+
+    select.appendChild(option);
+
+  });
+}
+
+
+/* =====================================================
+   SAVE FEE
+===================================================== */
+
+async function saveFee() {
+
+  try {
+
+    const studentSelect =
+      document.getElementById("fee_student");
+
+    const month =
+      document.getElementById("fee_month").value;
+
+    const amount =
+      Number(
+        document.getElementById("fee_amount").value
+      );
+
+    const paid =
+      Number(
+        document.getElementById("fee_paid_amount").value
+      );
+
+    const paymentDate =
+      document.getElementById("fee_payment_date").value;
+
+    const status =
+      document.getElementById("fee_status").value;
+
+    const note =
+      document.getElementById("fee_note").value.trim();
+
+    if (!studentSelect.value) {
+
+      toast("⚠️ ছাত্র নির্বাচন করুন");
+
+      return;
+    }
+
+    if (!month) {
+
+      toast("⚠️ মাস নির্বাচন করুন");
+
+      return;
+    }
+
+    const selected =
+      studentSelect.options[
+        studentSelect.selectedIndex
+      ];
+
+    const data = {
+
+      student_id:
+        studentSelect.value,
+
+      student_name:
+        selected.dataset.name || "",
+
+      roll_no:
+        selected.dataset.roll || "",
+
+      fee_month:
+        month,
+
+      amount:
+        amount,
+
+      paid_amount:
+        paid,
+
+      payment_date:
+        paymentDate || null,
+
+      status:
+        status,
+
+      note:
+        note,
+
+      created_at:
+        new Date().toISOString(),
+
+      updated_at:
+        new Date().toISOString()
+    };
+
+    await supabaseRequest(
+      "fees",
+      {
+        method: "POST",
+        body: data
+      }
+    );
+
+    toast("✅ বেতন / ফি সংরক্ষণ হয়েছে");
+
+    document.getElementById("fee_student").value = "";
+
+    document.getElementById("fee_month").value = "";
+
+    document.getElementById("fee_amount").value = "";
+
+    document.getElementById("fee_paid_amount").value = "";
+
+    document.getElementById("fee_payment_date").value = "";
+
+    document.getElementById("fee_status").value =
+      "পরিশোধিত";
+
+    document.getElementById("fee_note").value = "";
+
+    await loadFeeHistory();
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast(
+      "❌ সংরক্ষণ করা যায়নি: " +
+      (error.message || error)
+    );
+  }
+}
+
+
+/* =====================================================
+   LOAD FEE HISTORY
+===================================================== */
+
+async function loadFeeHistory() {
+
+  const tbody =
+    document.getElementById("feeTableBody");
+
+  if (!tbody) return;
+
+  try {
+
+    const fees =
+      await supabaseRequest(
+        "fees?select=*&order=id.desc"
+      );
+
+    if (!Array.isArray(fees) || !fees.length) {
+
+      tbody.innerHTML =
+        '<tr><td colspan="10" style="text-align:center">কোনো ফি-এর তথ্য নেই</td></tr>';
+
+      return;
+    }
+
+    tbody.innerHTML =
+      fees.map(function(fee, index) {
+
+        const total =
+          Number(fee.amount || 0);
+
+        const paid =
+          Number(fee.paid_amount || 0);
+
+        const due =
+          Math.max(total - paid, 0);
+
+        return `
+          <tr>
+
+            <td>${index + 1}</td>
+
+            <td>${safe(fee.student_name || "")}</td>
+
+            <td>${safe(fee.roll_no || "")}</td>
+
+            <td>${safe(fee.fee_month || "")}</td>
+
+            <td>${total}</td>
+
+            <td>${paid}</td>
+
+            <td>${due}</td>
+
+            <td>${safe(fee.status || "")}</td>
+
+            <td>${safe(fee.payment_date || "")}</td>
+
+            <td>
+              <button
+                class="btn danger"
+                onclick="deleteFee(${fee.id})">
+                🗑️
+              </button>
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+
+  } catch (error) {
+
+    console.error(error);
+
+    tbody.innerHTML =
+      '<tr><td colspan="10" style="text-align:center">তথ্য লোড করা যায়নি</td></tr>';
+  }
+}
+
+
+/* =====================================================
+   DELETE FEE
+===================================================== */
+
+async function deleteFee(id) {
+
+  if (!confirm("এই ফি-এর তথ্য মুছে ফেলতে চান?")) {
+
+    return;
+  }
+
+  try {
+
+    await supabaseRequest(
+      "fees?id=eq." + id,
+      {
+        method: "DELETE"
+      }
+    );
+
+    toast("🗑️ ফি-এর তথ্য মুছে ফেলা হয়েছে");
+
+    await loadFeeHistory();
+
+  } catch (error) {
+
+    console.error(error);
+
+    toast(
+      "❌ মুছে ফেলা যায়নি: " +
+      (error.message || error)
+    );
+  }
+}
 
 /* =====================================================
    PANELS
