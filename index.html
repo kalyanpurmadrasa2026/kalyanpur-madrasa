@@ -172,16 +172,1229 @@ footer{
 </button>
 
 </div>
-<!-- বেতন / ফি -->
+<!-- বেতন / ফি ব্যবস্থাপনা -->
 <section id="fees" class="panel hidden">
 
-<h2>💰 বেতন / ফি</h2>
+<h2>💰 বেতন / ফি ব্যবস্থাপনা</h2>
 
 <div class="card">
-<p>বেতন / ফি ব্যবস্থাপনা চালু করার জন্য প্রস্তুত।</p>
+
+<div class="formgrid">
+
+<div class="field">
+<label>ছাত্র নির্বাচন</label>
+<select id="feeStudent">
+<option value="">ছাত্র নির্বাচন করুন</option>
+</select>
+</div>
+
+<div class="field">
+<label>ফি-এর ধরন</label>
+<select id="feeType">
+<option value="">ফি-এর ধরন নির্বাচন করুন</option>
+</select>
+</div>
+
+<div class="field">
+<label>মাস</label>
+<select id="feeMonth">
+<option value="1">জানুয়ারি</option>
+<option value="2">ফেব্রুয়ারি</option>
+<option value="3">মার্চ</option>
+<option value="4">এপ্রিল</option>
+<option value="5">মে</option>
+<option value="6">জুন</option>
+<option value="7">জুলাই</option>
+<option value="8">আগস্ট</option>
+<option value="9">সেপ্টেম্বর</option>
+<option value="10">অক্টোবর</option>
+<option value="11">নভেম্বর</option>
+<option value="12">ডিসেম্বর</option>
+</select>
+</div>
+
+<div class="field">
+<label>বছর</label>
+<input type="number" id="feeYear" value="2026">
+</div>
+
+<div class="field">
+<label>মোট ফি</label>
+<input type="number" id="feeAmount" min="0" step="0.01" placeholder="মোট ফি">
+</div>
+
+<div class="field">
+<label>জমা</label>
+<input type="number" id="feePaid" min="0" step="0.01" placeholder="জমার পরিমাণ">
+</div>
+
+<div class="field">
+<label>বাকি</label>
+<input type="number" id="feeDue" readonly>
+</div>
+
+<div class="field">
+<label>জমার তারিখ</label>
+<input type="date" id="feePaymentDate">
+</div>
+
+<div class="field">
+<label>পেমেন্ট পদ্ধতি</label>
+<select id="feePaymentMethod">
+<option value="নগদ">নগদ</option>
+<option value="বিকাশ">বিকাশ</option>
+<option value="নগদ মোবাইল">নগদ মোবাইল</option>
+<option value="ব্যাংক">ব্যাংক</option>
+<option value="অন্যান্য">অন্যান্য</option>
+</select>
+</div>
+
+<div class="field">
+<label>যিনি টাকা দিয়েছেন</label>
+<input type="text" id="feePayerName" placeholder="নাম">
+</div>
+
+<div class="field">
+<label>সম্পর্ক</label>
+<select id="feePayerRelation">
+<option value="">সম্পর্ক নির্বাচন করুন</option>
+<option value="বাবা">বাবা</option>
+<option value="মা">মা</option>
+<option value="ভাই">ভাই</option>
+<option value="বোন">বোন</option>
+<option value="চাচা">চাচা</option>
+<option value="মামা">মামা</option>
+<option value="অভিভাবক">অভিভাবক</option>
+<option value="ছাত্র নিজে">ছাত্র নিজে</option>
+<option value="অন্যান্য">অন্যান্য</option>
+</select>
+</div>
+
+<div class="field">
+<label>মোবাইল</label>
+<input type="tel" id="feePayerPhone" placeholder="মোবাইল নম্বর">
+</div>
+
+<div class="field">
+<label>নোট</label>
+<input type="text" id="feeNote" placeholder="প্রয়োজনে নোট লিখুন">
+</div>
+
+</div>
+
+<div id="feeStudentPreview" style="margin-top:15px;"></div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+
+<button type="button" onclick="saveFeePayment()">
+💾 টাকা জমা করুন
+</button>
+
+<button type="button" onclick="loadFeePayments()">
+🔄 হিসাব দেখুন
+</button>
+
+<button type="button" onclick="printFeeReport()">
+🖨️ রিপোর্ট প্রিন্ট
+</button>
+
+</div>
+
+</div>
+
+<div class="card" style="margin-top:20px;">
+
+<h3>📊 ফি হিসাবের সারাংশ</h3>
+
+<div class="formgrid">
+
+<div class="field">
+<label>মোট ফি</label>
+<input type="number" id="feeSummaryTotal" readonly value="0">
+</div>
+
+<div class="field">
+<label>মোট জমা</label>
+<input type="number" id="feeSummaryPaid" readonly value="0">
+</div>
+
+<div class="field">
+<label>মোট বাকি</label>
+<input type="number" id="feeSummaryDue" readonly value="0">
+</div>
+
+</div>
+
+</div>
+
+<div class="card" style="margin-top:20px;overflow-x:auto;">
+
+<h3>📋 জমার তালিকা</h3>
+
+<table style="width:100%;border-collapse:collapse;min-width:900px;">
+
+<thead>
+<tr>
+<th>ক্রম</th>
+<th>ছাত্র</th>
+<th>মাস</th>
+<th>বছর</th>
+<th>মোট</th>
+<th>জমা</th>
+<th>বাকি</th>
+<th>তারিখ</th>
+<th>রসিদ</th>
+<th>পদ্ধতি</th>
+<th>অ্যাকশন</th>
+</tr>
+</thead>
+
+<tbody id="feePaymentTable">
+<tr>
+<td colspan="11" style="text-align:center;">
+কোনো হিসাব পাওয়া যায়নি
+</td>
+</tr>
+</tbody>
+
+</table>
+
 </div>
 
 </section>
+
+<script>
+
+let feeStudentsData = [];
+let feeTypesData = [];
+let feePaymentsData = [];
+
+function feeGetStudentName(student) {
+return student.name ||
+student.student_name ||
+student.full_name ||
+student.studentName ||
+student.s_name ||
+"নাম নেই";
+}
+
+function feeGetRoll(student) {
+return student.roll ||
+student.student_roll ||
+student.roll_no ||
+student.roll_number ||
+"";
+}
+
+function feeGetClass(student) {
+return student.class ||
+student.class_name ||
+student.jamat ||
+student.jamat_name ||
+student.s_class ||
+"";
+}
+
+function feeGetDepartment(student) {
+return student.department ||
+student.department_name ||
+student.s_department ||
+"";
+}
+
+function feeGetAdmission(student) {
+return student.admission ||
+student.admission_no ||
+student.admission_number ||
+student.admission_id ||
+"";
+}
+
+async function loadFeeStudents() {
+
+try {
+
+const data = await supabaseRequest(
+"student?institution_id=eq." +
+INSTITUTION_ID +
+"&order=id.asc"
+);
+
+feeStudentsData = Array.isArray(data) ? data : [];
+
+const select = document.getElementById("feeStudent");
+
+if (!select) return;
+
+select.innerHTML =
+'<option value="">ছাত্র নির্বাচন করুন</option>';
+
+feeStudentsData.forEach(function(student) {
+
+const option = document.createElement("option");
+
+option.value = student.id;
+
+option.textContent =
+feeGetStudentName(student) +
+" | রোল: " +
+feeGetRoll(student);
+
+select.appendChild(option);
+
+});
+
+} catch(error) {
+
+console.error(error);
+
+toast("ছাত্র তালিকা লোড হয়নি");
+
+}
+
+}
+
+async function loadFeeTypes() {
+
+try {
+
+const data = await supabaseRequest(
+"fee_type?institution_id=eq." +
+INSTITUTION_ID +
+"&is_active=eq.true&order=name.asc"
+);
+
+feeTypesData = Array.isArray(data) ? data : [];
+
+const select = document.getElementById("feeType");
+
+if (!select) return;
+
+select.innerHTML =
+'<option value="">ফি-এর ধরন নির্বাচন করুন</option>';
+
+feeTypesData.forEach(function(type) {
+
+const option = document.createElement("option");
+
+option.value = type.id;
+
+option.textContent =
+type.name +
+" — " +
+Number(type.default_amount || 0) +
+" টাকা";
+
+option.dataset.amount =
+type.default_amount || 0;
+
+select.appendChild(option);
+
+});
+
+} catch(error) {
+
+console.error(error);
+
+toast("ফি-এর ধরন লোড হয়নি");
+
+}
+
+}
+
+document.addEventListener("change", function(event) {
+
+if (event.target.id === "feeStudent") {
+
+const studentId = event.target.value;
+
+const student =
+feeStudentsData.find(function(item) {
+return String(item.id) === String(studentId);
+});
+
+const preview =
+document.getElementById("feeStudentPreview");
+
+if (!student) {
+
+preview.innerHTML = "";
+
+return;
+
+}
+
+preview.innerHTML =
+
+'<div style="padding:15px;border-radius:10px;border:1px solid #ddd;background:#f8fafc;">' +
+
+"<b>👨‍🎓 " +
+safe(feeGetStudentName(student)) +
+"</b><br>" +
+
+"জামাত/শ্রেণি: " +
+safe(feeGetClass(student)) +
+"<br>" +
+
+"বিভাগ: " +
+safe(feeGetDepartment(student)) +
+"<br>" +
+
+"রোল: " +
+safe(feeGetRoll(student)) +
+"<br>" +
+
+"ভর্তি নম্বর: " +
+safe(feeGetAdmission(student)) +
+
+"</div>";
+
+}
+
+if (event.target.id === "feeType") {
+
+const selected =
+event.target.options[event.target.selectedIndex];
+
+if (selected && selected.dataset.amount) {
+
+document.getElementById("feeAmount").value =
+selected.dataset.amount;
+
+calculateFeeDue();
+
+}
+
+}
+
+});
+
+document.addEventListener("input", function(event) {
+
+if (
+event.target.id === "feeAmount" ||
+event.target.id === "feePaid"
+) {
+
+calculateFeeDue();
+
+}
+
+});
+
+function calculateFeeDue() {
+
+const total =
+Number(document.getElementById("feeAmount").value) || 0;
+
+const paid =
+Number(document.getElementById("feePaid").value) || 0;
+
+const due = Math.max(total - paid, 0);
+
+document.getElementById("feeDue").value = due;
+
+}
+
+async function saveFeePayment() {
+
+const studentId =
+document.getElementById("feeStudent").value;
+
+const feeTypeId =
+document.getElementById("feeType").value;
+
+const month =
+Number(document.getElementById("feeMonth").value);
+
+const year =
+Number(document.getElementById("feeYear").value);
+
+const feeAmount =
+Number(document.getElementById("feeAmount").value) || 0;
+
+const paidAmount =
+Number(document.getElementById("feePaid").value) || 0;
+
+const dueAmount =
+Math.max(feeAmount - paidAmount, 0);
+
+const paymentDate =
+document.getElementById("feePaymentDate").value;
+
+const paymentMethod =
+document.getElementById("feePaymentMethod").value;
+
+const payerName =
+document.getElementById("feePayerName").value.trim();
+
+const payerRelation =
+document.getElementById("feePayerRelation").value;
+
+const payerPhone =
+document.getElementById("feePayerPhone").value.trim();
+
+const note =
+document.getElementById("feeNote").value.trim();
+
+if (!studentId) {
+
+toast("প্রথমে ছাত্র নির্বাচন করুন");
+
+return;
+
+}
+
+if (!feeTypeId) {
+
+toast("ফি-এর ধরন নির্বাচন করুন");
+
+return;
+
+}
+
+if (feeAmount <= 0) {
+
+toast("মোট ফি লিখুন");
+
+return;
+
+}
+
+if (paidAmount <= 0) {
+
+toast("জমার পরিমাণ লিখুন");
+
+return;
+
+}
+
+if (paidAmount > feeAmount) {
+
+toast("জমার পরিমাণ মোট ফি-এর চেয়ে বেশি হতে পারবে না");
+
+return;
+
+}
+
+const receiptNo =
+"PF-" +
+year +
+String(month).padStart(2, "0") +
+"-" +
+Date.now().toString().slice(-6);
+
+let finalNote = note;
+
+const payerInfo =
+"Payer: " +
+(payerName || "-") +
+" | Relation: " +
+(payerRelation || "-") +
+" | Phone: " +
+(payerPhone || "-");
+
+if (finalNote) {
+
+finalNote =
+finalNote +
+" | " +
+payerInfo;
+
+} else {
+
+finalNote = payerInfo;
+
+}
+
+try {
+
+const paymentData = {
+
+institution_id: INSTITUTION_ID,
+
+student_id: studentId,
+
+month: month,
+
+year: year,
+
+fee_amount: feeAmount,
+
+paid_amount: paidAmount,
+
+due_amount: dueAmount,
+
+payment_date:
+paymentDate ||
+new Date().toISOString().slice(0,10),
+
+receipt_no: receiptNo,
+
+payment_method: paymentMethod,
+
+note: finalNote
+
+};
+
+await supabaseRequest(
+"fee_payment",
+{
+method: "POST",
+body: paymentData
+}
+);
+
+const studentFeeData = {
+
+institution_id: INSTITUTION_ID,
+
+student_id: studentId,
+
+fee_type_id: feeTypeId,
+
+fee_month: month,
+
+fee_date:
+paymentDate ||
+new Date().toISOString().slice(0,10),
+
+amount: feeAmount,
+
+paid_amount: paidAmount,
+
+due_amount: dueAmount,
+
+status:
+dueAmount > 0 ? "due" : "paid"
+
+};
+
+try {
+
+await supabaseRequest(
+"student_fee",
+{
+method: "POST",
+body: studentFeeData
+}
+);
+
+} catch(studentFeeError) {
+
+console.warn(
+"student_fee সংরক্ষণ হয়নি:",
+studentFeeError
+);
+
+}
+
+toast(
+"✅ টাকা জমা হয়েছে। রসিদ: " +
+receiptNo
+);
+
+clearFeeForm();
+
+await loadFeePayments();
+
+} catch(error) {
+
+console.error(error);
+
+toast(
+"❌ টাকা জমা হয়নি: " +
+(error.message || "Unknown error")
+);
+
+}
+
+}
+
+function clearFeeForm() {
+
+document.getElementById("feeStudent").value = "";
+
+document.getElementById("feeType").value = "";
+
+document.getElementById("feeAmount").value = "";
+
+document.getElementById("feePaid").value = "";
+
+document.getElementById("feeDue").value = "";
+
+document.getElementById("feePayerName").value = "";
+
+document.getElementById("feePayerRelation").value = "";
+
+document.getElementById("feePayerPhone").value = "";
+
+document.getElementById("feeNote").value = "";
+
+document.getElementById("feeStudentPreview").innerHTML = "";
+
+}
+
+async function loadFeePayments() {
+
+try {
+
+const data = await supabaseRequest(
+"fee_payment?institution_id=eq." +
+INSTITUTION_ID +
+"&order=payment_date.desc,created_at.desc"
+);
+
+feePaymentsData =
+Array.isArray(data) ? data : [];
+
+renderFeePayments();
+
+} catch(error) {
+
+console.error(error);
+
+toast("ফি হিসাব লোড হয়নি");
+
+}
+
+}
+
+function getFeeStudent(studentId) {
+
+return feeStudentsData.find(function(student) {
+
+return String(student.id) ===
+String(studentId);
+
+});
+
+}
+
+function getMonthName(month) {
+
+const months = [
+
+"জানুয়ারি",
+"ফেব্রুয়ারি",
+"মার্চ",
+"এপ্রিল",
+"মে",
+"জুন",
+"জুলাই",
+"আগস্ট",
+"সেপ্টেম্বর",
+"অক্টোবর",
+"নভেম্বর",
+"ডিসেম্বর"
+
+];
+
+return months[Number(month) - 1] || month;
+
+}
+
+function renderFeePayments() {
+
+const tbody =
+document.getElementById("feePaymentTable");
+
+if (!tbody) return;
+
+if (!feePaymentsData.length) {
+
+tbody.innerHTML =
+'<tr><td colspan="11" style="text-align:center;">কোনো হিসাব পাওয়া যায়নি</td></tr>';
+
+updateFeeSummary();
+
+return;
+
+}
+
+tbody.innerHTML = "";
+
+feePaymentsData.forEach(function(payment, index) {
+
+const student =
+getFeeStudent(payment.student_id);
+
+const studentName =
+student ?
+feeGetStudentName(student) :
+"অজানা ছাত্র";
+
+const tr =
+document.createElement("tr");
+
+tr.innerHTML =
+
+"<td>" +
+(index + 1) +
+"</td>" +
+
+"<td>" +
+safe(studentName) +
+"</td>" +
+
+"<td>" +
+safe(getMonthName(payment.month)) +
+"</td>" +
+
+"<td>" +
+safe(payment.year) +
+"</td>" +
+
+"<td>" +
+Number(payment.fee_amount || 0) +
+"</td>" +
+
+"<td>" +
+Number(payment.paid_amount || 0) +
+"</td>" +
+
+"<td>" +
+Number(payment.due_amount || 0) +
+"</td>" +
+
+"<td>" +
+safe(payment.payment_date || "") +
+"</td>" +
+
+"<td>" +
+safe(payment.receipt_no || "") +
+"</td>" +
+
+"<td>" +
+safe(payment.payment_method || "") +
+"</td>" +
+
+"<td>" +
+
+'<button type="button" onclick="printFeeReceipt(\'' +
+String(payment.id) +
+'\')">🧾 রসিদ</button>' +
+
+"</td>";
+
+tbody.appendChild(tr);
+
+});
+
+updateFeeSummary();
+
+}
+
+function updateFeeSummary() {
+
+let total = 0;
+
+let paid = 0;
+
+let due = 0;
+
+feePaymentsData.forEach(function(item) {
+
+total +=
+Number(item.fee_amount || 0);
+
+paid +=
+Number(item.paid_amount || 0);
+
+due +=
+Number(item.due_amount || 0);
+
+});
+
+document.getElementById("feeSummaryTotal").value =
+total;
+
+document.getElementById("feeSummaryPaid").value =
+paid;
+
+document.getElementById("feeSummaryDue").value =
+due;
+
+}
+
+function printFeeReceipt(paymentId) {
+
+const payment =
+feePaymentsData.find(function(item) {
+
+return String(item.id) ===
+String(paymentId);
+
+});
+
+if (!payment) {
+
+toast("রসিদের তথ্য পাওয়া যায়নি");
+
+return;
+
+}
+
+const student =
+getFeeStudent(payment.student_id);
+
+const studentName =
+student ?
+feeGetStudentName(student) :
+"";
+
+const receiptWindow =
+window.open("", "_blank");
+
+if (!receiptWindow) {
+
+toast("Print window খুলতে পারেনি");
+
+return;
+
+}
+
+receiptWindow.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>ফি রসিদ</title>
+
+<style>
+
+body{
+font-family:Arial,"Noto Sans Bengali",sans-serif;
+padding:30px;
+color:#111;
+}
+
+.receipt{
+max-width:600px;
+margin:auto;
+border:2px solid #222;
+padding:25px;
+}
+
+h1,h2{
+text-align:center;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+padding:8px 0;
+border-bottom:1px solid #ddd;
+}
+
+@media print{
+button{
+display:none;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="receipt">
+
+<h1>কল্যাণপুর এমদাদুল উলুম</h1>
+
+<h2>বেতন / ফি রসিদ</h2>
+
+<div class="row">
+<b>রসিদ নম্বর</b>
+<span>${safe(payment.receipt_no || "")}</span>
+</div>
+
+<div class="row">
+<b>ছাত্র</b>
+<span>${safe(studentName)}</span>
+</div>
+
+<div class="row">
+<b>মাস</b>
+<span>${safe(getMonthName(payment.month))}</span>
+</div>
+
+<div class="row">
+<b>বছর</b>
+<span>${safe(payment.year)}</span>
+</div>
+
+<div class="row">
+<b>মোট ফি</b>
+<span>${Number(payment.fee_amount || 0)} টাকা</span>
+</div>
+
+<div class="row">
+<b>জমা</b>
+<span>${Number(payment.paid_amount || 0)} টাকা</span>
+</div>
+
+<div class="row">
+<b>বাকি</b>
+<span>${Number(payment.due_amount || 0)} টাকা</span>
+</div>
+
+<div class="row">
+<b>তারিখ</b>
+<span>${safe(payment.payment_date || "")}</span>
+</div>
+
+<div class="row">
+<b>পদ্ধতি</b>
+<span>${safe(payment.payment_method || "")}</span>
+</div>
+
+<br>
+
+<p style="text-align:right;">
+স্বাক্ষর: __________________
+</p>
+
+</div>
+
+<script>
+window.onload=function(){
+window.print();
+};
+<\/script>
+
+</body>
+
+</html>
+
+`);
+
+receiptWindow.document.close();
+
+}
+
+function printFeeReport() {
+
+if (!feePaymentsData.length) {
+
+toast("প্রিন্ট করার মতো কোনো হিসাব নেই");
+
+return;
+
+}
+
+const reportWindow =
+window.open("", "_blank");
+
+if (!reportWindow) {
+
+toast("Print window খুলতে পারেনি");
+
+return;
+
+}
+
+let total = 0;
+let paid = 0;
+let due = 0;
+
+feePaymentsData.forEach(function(item) {
+
+total +=
+Number(item.fee_amount || 0);
+
+paid +=
+Number(item.paid_amount || 0);
+
+due +=
+Number(item.due_amount || 0);
+
+});
+
+let rows = "";
+
+feePaymentsData.forEach(function(payment,index) {
+
+const student =
+getFeeStudent(payment.student_id);
+
+const studentName =
+student ?
+feeGetStudentName(student) :
+"অজানা";
+
+rows += `
+
+<tr>
+
+<td>${index + 1}</td>
+
+<td>${safe(studentName)}</td>
+
+<td>${safe(getMonthName(payment.month))}</td>
+
+<td>${safe(payment.year)}</td>
+
+<td>${Number(payment.fee_amount || 0)}</td>
+
+<td>${Number(payment.paid_amount || 0)}</td>
+
+<td>${Number(payment.due_amount || 0)}</td>
+
+<td>${safe(payment.payment_date || "")}</td>
+
+</tr>
+
+`;
+
+});
+
+reportWindow.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>বেতন / ফি রিপোর্ট</title>
+
+<style>
+
+body{
+font-family:Arial,"Noto Sans Bengali",sans-serif;
+padding:20px;
+}
+
+h1,h2{
+text-align:center;
+}
+
+.summary{
+display:flex;
+gap:20px;
+justify-content:center;
+margin:20px 0;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #333;
+padding:7px;
+text-align:center;
+}
+
+@media print{
+button{
+display:none;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>কল্যাণপুর এমদাদুল উলুম</h1>
+
+<h2>বেতন / ফি রিপোর্ট</h2>
+
+<div class="summary">
+
+<div>
+<b>মোট ফি</b><br>
+${total} টাকা
+</div>
+
+<div>
+<b>মোট জমা</b><br>
+${paid} টাকা
+</div>
+
+<div>
+<b>মোট বাকি</b><br>
+${due} টাকা
+</div>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>ক্রম</th>
+<th>ছাত্র</th>
+<th>মাস</th>
+<th>বছর</th>
+<th>মোট</th>
+<th>জমা</th>
+<th>বাকি</th>
+<th>তারিখ</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+${rows}
+
+</tbody>
+
+</table>
+
+<script>
+window.onload=function(){
+window.print();
+};
+<\/script>
+
+</body>
+
+</html>
+
+`);
+
+reportWindow.document.close();
+
+}
+
+document.addEventListener(
+"DOMContentLoaded",
+function() {
+
+const dateInput =
+document.getElementById("feePaymentDate");
+
+if (dateInput) {
+
+dateInput.value =
+new Date().toISOString().slice(0,10);
+
+}
+
+loadFeeStudents();
+
+loadFeeTypes();
+
+loadFeePayments();
+
+});
+
+</script>
 <!-- ছাত্র তালিকা -->
 <section id="students" class="panel hidden">
 
