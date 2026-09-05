@@ -448,7 +448,7 @@ select.appendChild(option);
 
 console.error(error);
 
-toast("ছাত্র তালিকা লোড হয়নি");
+toast("ছাত্র তালিকা: " + error.message);
 
 }
 
@@ -854,7 +854,7 @@ renderFeePayments();
 
 console.error(error);
 
-toast("ফি হিসাব লোড হয়নি");
+toast("ফি হিসাব: " + error.message);
 
 }
 
