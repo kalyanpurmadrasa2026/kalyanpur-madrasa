@@ -190,9 +190,21 @@ footer{
 
 <div class="field">
 <label>ফি-এর ধরন</label>
-<select id="feeType">
-<option value="">ফি-এর ধরন নির্বাচন করুন</option>
+<select id="feeType" onchange="handleFeeTypeChange()">
+  <option value="">ফি-এর ধরন নির্বাচন করুন</option>
 </select>
+
+<div class="field" id="examTypeField" style="display:none;">
+  <label>পরীক্ষার ধরন</label>
+  <select id="examType">
+    <option value="">পরীক্ষার ধরন নির্বাচন করুন</option>
+    <option value="১ম সাময়িক পরীক্ষা">১ম সাময়িক পরীক্ষা</option>
+    <option value="২য় সাময়িক পরীক্ষা">২য় সাময়িক পরীক্ষা</option>
+    <option value="৩য় সাময়িক পরীক্ষা">৩য় সাময়িক পরীক্ষা</option>
+    <option value="বার্ষিক পরীক্ষা">বার্ষিক পরীক্ষা</option>
+    <option value="মডেল টেস্ট">মডেল টেস্ট</option>
+  </select>
+</div>
 </div>
 
 <div class="field">
