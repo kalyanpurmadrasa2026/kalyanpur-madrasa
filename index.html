@@ -1113,11 +1113,11 @@ async function loadFeeTypes() {
   try {
 
     const data =
-      await supabaseRequest(
-        "fee_type?institution_id=eq." +
-        INSTITUTION_ID +
-        "&is_active=eq.true&order=name.asc"
-      );
+  await supabaseRequest(
+    "fee_types?institution_id=eq." +
+    INSTITUTION_ID +
+    "&is_active=eq.true&order=name.asc"
+  );
 
 
     feeTypesData =
