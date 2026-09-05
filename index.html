@@ -1327,7 +1327,20 @@ function calculateFeeDue() {
 /* =====================================================
    SAVE FEE PAYMENT
 ===================================================== */
+function handleFeeTypeChange() {
+  const feeType = document.getElementById("feeType");
+  const examTypeField = document.getElementById("examTypeField");
+  const examType = document.getElementById("examType");
 
+  if (!feeType || !examTypeField || !examType) return;
+
+  if (feeType.value === "পরীক্ষার ফি") {
+    examTypeField.style.display = "block";
+  } else {
+    examTypeField.style.display = "none";
+    examType.value = "";
+  }
+}
 async function saveFeePayment() {
 
   const studentId =
