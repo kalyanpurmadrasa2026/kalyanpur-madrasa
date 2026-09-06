@@ -1124,12 +1124,30 @@ async function loadFeeTypes() {
 
   try {
 
-    const data =
+    console.log("========== FEE TYPES DEBUG ==========");
+console.log("Institution ID:", INSTITUTION_ID);
+
+const feeTypesRequest =
+  "fee_types?institution_id=eq." +
+  INSTITUTION_ID +
+  "&is_active=eq.true&order=name.asc";
+
+console.log("Request:", feeTypesRequest);
+
+const data =
   await supabaseRequest(
-    "fee_types?institution_id=eq." +
-    INSTITUTION_ID +
-    "&is_active=eq.true&order=name.asc"
+    feeTypesRequest
   );
+
+console.log("Fee Types Data:", data);
+console.log(
+  "Fee Types Count:",
+  Array.isArray(data)
+    ? data.length
+    : "Not Array"
+);
+
+console.log("========== FEE TYPES DEBUG END ==========");
 
 
     feeTypesData =
