@@ -1182,13 +1182,7 @@ console.log("========== FEE TYPES DEBUG END ==========");
           type.id;
 
 
-        option.textContent =
-          type.name +
-          " — " +
-          Number(
-            type.default_amount || 0
-          ) +
-          " টাকা";
+        option.textContent = type.name;
 
 
         option.dataset.amount =
