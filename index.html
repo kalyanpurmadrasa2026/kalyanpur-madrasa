@@ -3338,7 +3338,13 @@ function showReceiptForm() {
       </div>
     </div>
   `;
+const receiptNoField = document.getElementById("receiptNo");
 
+if (receiptNoField) {
+  const year = new Date().getFullYear();
+  const number = Date.now().toString().slice(-6);
+  receiptNoField.value = "REC-" + year + "-" + number;
+}
   const dateField = document.getElementById("receiptDate");
 
   if (dateField) {
