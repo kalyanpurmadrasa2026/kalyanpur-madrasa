@@ -3080,7 +3080,7 @@ document.addEventListener(
 </div>
 
 <div class="actions">
-<button class="btn" onclick="toast('নতুন রশিদ তৈরির ব্যবস্থা প্রস্তুত')">
+<button class="btn" onclick="showReceiptForm()">
 ➕ নতুন রশিদ
 </button>
 
@@ -3199,7 +3199,152 @@ async function supabaseRequest(table, options = {}) {
 /* =====================================================
    RECEIPT BOOK
 ===================================================== */
+function showReceiptForm() {
+  const result = document.getElementById("receiptContent");
 
+  if (!result) {
+    toast("রশিদ ফর্মের জায়গা পাওয়া যায়নি");
+    return;
+  }
+
+  result.innerHTML = `
+    <div class="card" style="margin-top:20px;">
+      <h3>🧾 নতুন রশিদ তৈরি</h3>
+      <p style="color:#666;">
+        নতুন রশিদের তথ্য এখানে পূরণ করুন।
+      </p>
+
+      <div class="formgrid">
+
+        <div class="field">
+          <label>রশিদ নম্বর</label>
+          <input
+            type="text"
+            id="receiptNo"
+            readonly
+            placeholder="অটোমেটিক তৈরি হবে"
+          >
+        </div>
+
+        <div class="field">
+          <label>তারিখ</label>
+          <input
+            type="date"
+            id="receiptDate"
+          >
+        </div>
+
+        <div class="field">
+          <label>দাতার নাম</label>
+          <input
+            type="text"
+            id="receiptDonorName"
+            placeholder="দাতার নাম লিখুন"
+          >
+        </div>
+
+        <div class="field">
+          <label>মোবাইল নম্বর</label>
+          <input
+            type="text"
+            id="receiptDonorMobile"
+            placeholder="মোবাইল নম্বর লিখুন"
+          >
+        </div>
+
+        <div class="field">
+          <label>ঠিকানা</label>
+          <input
+            type="text"
+            id="receiptDonorAddress"
+            placeholder="দাতার ঠিকানা লিখুন"
+          >
+        </div>
+
+        <div class="field">
+          <label>ফান্ড</label>
+          <select id="receiptFund">
+            <option value="">ফান্ড নির্বাচন করুন</option>
+            <option value="সাধারণ ফান্ড">সাধারণ ফান্ড</option>
+            <option value="লিল্লাহ ফান্ড">লিল্লাহ ফান্ড</option>
+            <option value="যাকাত ফান্ড">যাকাত ফান্ড</option>
+            <option value="ফিতরা ফান্ড">ফিতরা ফান্ড</option>
+            <option value="চামড়া ফান্ড">চামড়া ফান্ড</option>
+            <option value="সাধারণ দান">সাধারণ দান</option>
+            <option value="অনুদান">অনুদান</option>
+            <option value="অন্যান্য">অন্যান্য</option>
+            <option value="নির্মাণ কাজ">নির্মাণ কাজ</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>টাকার পরিমাণ</label>
+          <input
+            type="number"
+            id="receiptAmount"
+            min="0"
+            step="0.01"
+            placeholder="টাকার পরিমাণ লিখুন"
+          >
+        </div>
+
+        <div class="field">
+          <label>পরিশোধের মাধ্যম</label>
+          <select id="receiptPaymentMethod">
+            <option value="">পরিশোধের মাধ্যম নির্বাচন করুন</option>
+            <option value="নগদ">নগদ</option>
+            <option value="বিকাশ">বিকাশ</option>
+            <option value="নগদ মোবাইল">নগদ</option>
+            <option value="রকেট">রকেট</option>
+            <option value="ব্যাংক">ব্যাংক</option>
+            <option value="অন্যান্য">অন্যান্য</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>উদ্দেশ্য</label>
+          <input
+            type="text"
+            id="receiptPurpose"
+            placeholder="যেমন: মাদ্রাসার সাধারণ দান"
+          >
+        </div>
+
+        <div class="field">
+          <label>নোট</label>
+          <input
+            type="text"
+            id="receiptNote"
+            placeholder="প্রয়োজনে নোট লিখুন"
+          >
+        </div>
+
+      </div>
+
+      <div class="actions" style="margin-top:20px;">
+        <button
+          class="btn"
+          onclick="toast('রশিদ সংরক্ষণ পরবর্তী ধাপে যুক্ত হবে')"
+        >
+          💾 রশিদ সংরক্ষণ
+        </button>
+
+        <button
+          class="btn"
+          onclick="showPanel('receipts')"
+        >
+          ↩️ ফিরে যান
+        </button>
+      </div>
+    </div>
+  `;
+
+  const dateField = document.getElementById("receiptDate");
+
+  if (dateField) {
+    dateField.value = new Date().toISOString().split("T")[0];
+  }
+}
 
 /* =====================================================
    DASHBOARD
