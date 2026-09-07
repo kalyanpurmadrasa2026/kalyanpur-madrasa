@@ -3352,7 +3352,78 @@ if (receiptNoField) {
   }
 }
 async function saveReceipt() {
-  toast("রশিদ সংরক্ষণের ব্যবস্থা চালু হচ্ছে...");
+  try {
+    const receiptNo = document.getElementById("receiptNo").value.trim();
+    const receiptDate = document.getElementById("receiptDate").value;
+    const donorName = document.getElementById("receiptDonorName").value.trim();
+    const donorMobile = document.getElementById("receiptDonorMobile").value.trim();
+    const donorAddress = document.getElementById("receiptDonorAddress").value.trim();
+    const fundName = document.getElementById("receiptFund").value;
+    const amount = document.getElementById("receiptAmount").value;
+    const paymentMethod = document.getElementById("receiptPaymentMethod").value;
+    const purpose = document.getElementById("receiptPurpose").value.trim();
+    const note = document.getElementById("receiptNote").value.trim();
+
+    if (!receiptDate) {
+      toast("তারিখ নির্বাচন করুন");
+      return;
+    }
+
+    if (!donorName) {
+      toast("দাতার নাম লিখুন");
+      return;
+    }
+
+    if (!fundName) {
+      toast("ফান্ড নির্বাচন করুন");
+      return;
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      toast("সঠিক টাকার পরিমাণ লিখুন");
+      return;
+    }
+
+    if (!paymentMethod) {
+      toast("পরিশোধের মাধ্যম নির্বাচন করুন");
+      return;
+    }
+
+    const duplicate = await supabaseRequest(
+      "receipts?institution_id=eq." +
+      INSTITUTION_ID +
+      "&receipt_no=eq." +
+      encodeURIComponent(receiptNo)
+    );
+
+    if (duplicate.length > 0) {
+      toast("এই রশিদ নম্বরটি ইতিমধ্যে ব্যবহৃত হয়েছে");
+      return;
+    }
+
+    await supabaseRequest("receipts", {
+      method: "POST",
+      body: {
+        institution_id: INSTITUTION_ID,
+        receipt_no: receiptNo,
+        receipt_date: receiptDate,
+        donor_name: donorName,
+        donor_address: donorAddress || null,
+        donor_mobile: donorMobile || null,
+        fund_name: fundName,
+        amount: Number(amount),
+        payment_method: paymentMethod,
+        purpose: purpose || null,
+        note: note || null
+      }
+    });
+
+    toast("রশিদ সফলভাবে সংরক্ষণ হয়েছে");
+
+  } catch (error) {
+    console.error("Receipt Save Error:", error);
+    toast("রশিদ সংরক্ষণ করা যায়নি");
+  }
 }
 /* =====================================================
    DASHBOARD
