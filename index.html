@@ -3192,6 +3192,14 @@ async function supabaseRequest(table, options = {}) {
    🧾 রশিদ বহি - সম্পূর্ণ সিস্টেম
 ===================================================== */
 
+/* =====================================================
+   🧾 রশিদ বহি
+===================================================== */
+
+/* =====================================================
+   RECEIPT BOOK
+===================================================== */
+
 const receiptFunds = [
   "সাধারণ ফান্ড",
   "লিল্লাহ ফান্ড",
@@ -3204,318 +3212,181 @@ const receiptFunds = [
   "নির্মাণ কাজ"
 ];
 
-let receiptState = {
-  currentReceipt: null,
-  receipts: [],
-  report: null
-};
-
-
-/* =====================================================
-   রশিদ নম্বর তৈরি
-===================================================== */
-
-async function generateReceiptNumber() {
-
-  const year = new Date().getFullYear();
-
-  try {
-
-    const data = await supabaseRequest(
-      "receipts?institution_id=eq." +
-      INSTITUTION_ID +
-      "&receipt_no=like.REC-" +
-      year +
-      "-%25&order=receipt_no.desc&limit=1"
-    );
-
-    let nextNumber = 1;
-
-    if (data && data.length > 0) {
-
-      const lastReceipt =
-        data[0].receipt_no || "";
-
-      const parts =
-        lastReceipt.split("-");
-
-      if (parts.length === 3) {
-
-        const lastNumber =
-          parseInt(parts[2], 10);
-
-        if (!isNaN(lastNumber)) {
-          nextNumber = lastNumber + 1;
-        }
-      }
-    }
-
-    return (
-      "REC-" +
-      year +
-      "-" +
-      String(nextNumber).padStart(6, "0")
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Receipt number error:",
-      error
-    );
-
-    return (
-      "REC-" +
-      year +
-      "-" +
-      Date.now().toString().slice(-6)
-    );
+function receiptSafe(value) {
+  if (value === null || value === undefined) {
+    return "";
   }
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
 /* =====================================================
-   রশিদ প্যানেল তৈরি
+   RECEIPT PANEL
 ===================================================== */
 
 function initializeReceiptPanel() {
 
-  const panel =
-    document.getElementById("receipts");
+  const panel = document.getElementById("receipts");
 
-  if (!panel) return;
+  if (!panel) {
+    return;
+  }
 
   panel.innerHTML = `
-
     <h2>🧾 রশিদ বহি</h2>
 
     <div class="cards2">
 
       <div class="info">
-
         <h3>🧾 নতুন রশিদ</h3>
-
-        <p>
-          দান, অনুদান, যাকাত, ফিতরা ও অন্যান্য আয়ের রশিদ তৈরি করুন।
-        </p>
-
+        <p>দান, অনুদান, যাকাত, ফিতরা ও অন্যান্য আয়ের রশিদ তৈরি করুন।</p>
       </div>
 
-
       <div class="info">
-
         <h3>📋 রশিদ তালিকা</h3>
-
-        <p>
-          সকল রশিদ দেখা, খোঁজা ও প্রিন্ট করা যাবে।
-        </p>
-
+        <p>সকল রশিদ দেখা, খোঁজা ও প্রিন্ট করা যাবে।</p>
       </div>
 
-
       <div class="info">
-
         <h3>📊 দৈনিক রিপোর্ট</h3>
-
-        <p>
-          তারিখ অনুযায়ী মোট রশিদ ও আদায়ের হিসাব দেখুন।
-        </p>
-
+        <p>নির্দিষ্ট দিনের রশিদ ও মোট আদায়ের হিসাব দেখা যাবে।</p>
       </div>
 
     </div>
 
-
     <div class="actions">
 
-      <button
-        class="btn"
-        onclick="showReceiptForm()"
-      >
+      <button class="btn" onclick="showReceiptForm()">
         ➕ নতুন রশিদ
       </button>
 
-
-      <button
-        class="btn"
-        onclick="showReceiptList()"
-      >
+      <button class="btn" onclick="loadReceiptList()">
         📋 রশিদ তালিকা
       </button>
 
-
-      <button
-        class="btn"
-        onclick="showReceiptReport()"
-      >
+      <button class="btn" onclick="loadReceiptDailyReport()">
         📊 দৈনিক রিপোর্ট
       </button>
 
     </div>
 
-
     <div id="receiptContent"></div>
-
   `;
 }
 
 
 /* =====================================================
-   নতুন রশিদ ফর্ম
+   NEW RECEIPT FORM
 ===================================================== */
 
 async function showReceiptForm() {
 
-  const content =
-    document.getElementById("receiptContent");
+  const result = document.getElementById("receiptContent");
 
-  if (!content) return;
+  if (!result) {
+    return;
+  }
 
-  const receiptNo =
-    await generateReceiptNumber();
+  const today = new Date().toISOString().split("T")[0];
 
-  const today =
-    new Date()
-      .toISOString()
-      .split("T")[0];
-
-
-  let fundOptions =
-    `<option value="">ফান্ড নির্বাচন করুন</option>`;
-
-
-  receiptFunds.forEach(function(fund) {
-
-    fundOptions +=
-      `<option value="${receiptSafe(fund)}">${receiptSafe(fund)}</option>`;
-
-  });
-
-
-  content.innerHTML = `
-
-    <div class="card">
+  result.innerHTML = `
+    <div class="card" style="margin-top:20px;">
 
       <h3>🧾 নতুন রশিদ তৈরি</h3>
 
-
       <div class="formgrid">
 
-
         <div class="field">
-
-          <label>
-            রশিদ নম্বর
-          </label>
-
+          <label>রশিদ নম্বর</label>
           <input
             id="receiptNo"
-            value="${receiptSafe(receiptNo)}"
+            type="text"
             readonly
+            placeholder="রশিদ নম্বর তৈরি হচ্ছে..."
           >
-
         </div>
 
-
         <div class="field">
-
-          <label>
-            তারিখ
-          </label>
-
+          <label>তারিখ</label>
           <input
-            type="date"
             id="receiptDate"
+            type="date"
             value="${today}"
           >
-
         </div>
 
-
         <div class="field">
-
-          <label>
-            দাতার নাম *
-          </label>
-
+          <label>দাতার নাম</label>
           <input
-            id="receiptDonorName"
+            id="donorName"
+            type="text"
             placeholder="দাতার নাম লিখুন"
           >
-
         </div>
 
-
         <div class="field">
-
-          <label>
-            ঠিকানা
-          </label>
-
+          <label>মোবাইল নম্বর</label>
           <input
-            id="receiptDonorAddress"
-            placeholder="দাতার ঠিকানা"
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            মোবাইল
-          </label>
-
-          <input
-            id="receiptDonorMobile"
+            id="donorMobile"
+            type="text"
             placeholder="মোবাইল নম্বর"
           >
-
         </div>
 
+        <div class="field">
+          <label>ঠিকানা</label>
+          <input
+            id="donorAddress"
+            type="text"
+            placeholder="দাতার ঠিকানা"
+          >
+        </div>
 
         <div class="field">
-
-          <label>
-            ফান্ড *
-          </label>
+          <label>ফান্ড / খাত</label>
 
           <select id="receiptFund">
 
-            ${fundOptions}
+            <option value="">
+              ফান্ড নির্বাচন করুন
+            </option>
+
+            ${receiptFunds.map(function(fund) {
+              return `
+                <option value="${receiptSafe(fund)}">
+                  ${receiptSafe(fund)}
+                </option>
+              `;
+            }).join("")}
 
           </select>
-
         </div>
 
-
         <div class="field">
-
-          <label>
-            পরিমাণ (টাকা) *
-          </label>
+          <label>টাকার পরিমাণ</label>
 
           <input
-            type="number"
             id="receiptAmount"
+            type="number"
             min="0"
             step="0.01"
             placeholder="টাকার পরিমাণ"
           >
-
         </div>
 
-
         <div class="field">
+          <label>পরিশোধের মাধ্যম</label>
 
-          <label>
-            পরিশোধের মাধ্যম *
-          </label>
-
-          <select id="receiptPaymentMethod">
+          <select id="paymentMethod">
 
             <option value="">
-              নির্বাচন করুন
+              মাধ্যম নির্বাচন করুন
             </option>
 
             <option value="নগদ">
@@ -3526,16 +3397,12 @@ async function showReceiptForm() {
               বিকাশ
             </option>
 
-            <option value="নগদ/বিকাশ">
-              নগদ/বিকাশ
+            <option value="রকেট">
+              রকেট
             </option>
 
             <option value="ব্যাংক">
               ব্যাংক
-            </option>
-
-            <option value="চেক">
-              চেক
             </option>
 
             <option value="অন্যান্য">
@@ -3543,183 +3410,183 @@ async function showReceiptForm() {
             </option>
 
           </select>
-
         </div>
 
-
         <div class="field">
-
-          <label>
-            উদ্দেশ্য / বিবরণ
-          </label>
+          <label>উদ্দেশ্য / বিবরণ</label>
 
           <input
             id="receiptPurpose"
-            placeholder="যেমন: মাদ্রাসার সাধারণ দান"
+            type="text"
+            placeholder="যেমন: মাদ্রাসার উন্নয়ন"
           >
-
         </div>
 
-
         <div class="field">
-
-          <label>
-            নোট
-          </label>
+          <label>নোট</label>
 
           <input
             id="receiptNote"
-            placeholder="প্রয়োজন হলে নোট লিখুন"
+            type="text"
+            placeholder="অতিরিক্ত কোনো তথ্য"
           >
-
         </div>
-
 
       </div>
 
-
       <div class="actions">
 
+        <button
+          class="btn"
+          onclick="saveReceipt()"
+        >
+          💾 রশিদ সংরক্ষণ
+        </button>
 
         <button
           class="btn"
-          onclick="saveReceipt(false)"
+          onclick="loadReceiptList()"
         >
-          💾 সংরক্ষণ
+          📋 রশিদ তালিকা
         </button>
-
-
-        <button
-          class="btn"
-          onclick="saveReceipt(true)"
-        >
-          🖨️ সংরক্ষণ ও প্রিন্ট
-        </button>
-
-
-        <button
-          class="btn"
-          onclick="closeReceiptForm()"
-        >
-          ✖ বন্ধ করুন
-        </button>
-
 
       </div>
 
     </div>
-
   `;
+
+  await generateNextReceiptNumber();
 }
 
 
 /* =====================================================
-   রশিদ সংরক্ষণ
+   NEXT RECEIPT NUMBER
 ===================================================== */
 
-async function saveReceipt(printAfterSave) {
+async function generateNextReceiptNumber() {
+
+  const receiptNoInput = document.getElementById("receiptNo");
+
+  if (!receiptNoInput) {
+    return;
+  }
+
+  try {
+
+    const data = await supabaseRequest(
+      "receipts?institution_id=eq." +
+      INSTITUTION_ID +
+      "&order=created_at.desc&limit=1"
+    );
+
+    let nextNumber = 1;
+
+    if (data && data.length > 0) {
+
+      const lastReceiptNo = data[0].receipt_no || "";
+
+      const match = lastReceiptNo.match(/REC-\d{4}-(\d+)/);
+
+      if (match) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+
+    const year = new Date().getFullYear();
+
+    const formattedNumber =
+      String(nextNumber).padStart(6, "0");
+
+    receiptNoInput.value =
+      "REC-" + year + "-" + formattedNumber;
+
+  } catch (error) {
+
+    console.error("Receipt number error:", error);
+
+    const year = new Date().getFullYear();
+
+    receiptNoInput.value =
+      "REC-" +
+      year +
+      "-" +
+      String(Date.now()).slice(-6);
+  }
+}
+
+
+/* =====================================================
+   SAVE RECEIPT
+===================================================== */
+
+async function saveReceipt() {
 
   const receiptNo =
-    document.getElementById("receiptNo");
+    document.getElementById("receiptNo")?.value.trim();
 
   const receiptDate =
-    document.getElementById("receiptDate");
+    document.getElementById("receiptDate")?.value;
 
   const donorName =
-    document.getElementById("receiptDonorName");
+    document.getElementById("donorName")?.value.trim();
 
   const donorAddress =
-    document.getElementById("receiptDonorAddress");
+    document.getElementById("donorAddress")?.value.trim();
 
   const donorMobile =
-    document.getElementById("receiptDonorMobile");
+    document.getElementById("donorMobile")?.value.trim();
 
-  const fund =
-    document.getElementById("receiptFund");
+  const fundName =
+    document.getElementById("receiptFund")?.value;
 
   const amount =
-    document.getElementById("receiptAmount");
+    document.getElementById("receiptAmount")?.value;
 
   const paymentMethod =
-    document.getElementById("receiptPaymentMethod");
+    document.getElementById("paymentMethod")?.value;
 
   const purpose =
-    document.getElementById("receiptPurpose");
+    document.getElementById("receiptPurpose")?.value.trim();
 
   const note =
-    document.getElementById("receiptNote");
+    document.getElementById("receiptNote")?.value.trim();
 
 
-  if (
-    !receiptNo ||
-    !receiptDate ||
-    !donorName ||
-    !fund ||
-    !amount ||
-    !paymentMethod
-  ) {
+  if (!receiptDate) {
 
-    toast(
-      "❌ রশিদ ফর্ম পাওয়া যায়নি।"
-    );
+    toast("⚠️ তারিখ নির্বাচন করুন");
 
     return;
   }
 
 
-  const donorNameValue =
-    donorName.value.trim();
+  if (!donorName) {
 
-  const amountValue =
-    parseFloat(amount.value);
-
-
-  if (!donorNameValue) {
-
-    toast(
-      "⚠️ দাতার নাম লিখুন।"
-    );
-
-    donorName.focus();
+    toast("⚠️ দাতার নাম লিখুন");
 
     return;
   }
 
 
-  if (!fund.value) {
+  if (!fundName) {
 
-    toast(
-      "⚠️ ফান্ড নির্বাচন করুন।"
-    );
-
-    fund.focus();
+    toast("⚠️ ফান্ড নির্বাচন করুন");
 
     return;
   }
 
 
-  if (
-    isNaN(amountValue) ||
-    amountValue <= 0
-  ) {
+  if (!amount || Number(amount) <= 0) {
 
-    toast(
-      "⚠️ সঠিক টাকার পরিমাণ লিখুন।"
-    );
-
-    amount.focus();
+    toast("⚠️ সঠিক টাকার পরিমাণ লিখুন");
 
     return;
   }
 
 
-  if (!paymentMethod.value) {
+  if (!paymentMethod) {
 
-    toast(
-      "⚠️ পরিশোধের মাধ্যম নির্বাচন করুন।"
-    );
-
-    paymentMethod.focus();
+    toast("⚠️ পরিশোধের মাধ্যম নির্বাচন করুন");
 
     return;
   }
@@ -3727,512 +3594,190 @@ async function saveReceipt(printAfterSave) {
 
   try {
 
-
-    /* ---------------------------------------------
-       ডুপ্লিকেট রশিদ নম্বর পরীক্ষা
-    --------------------------------------------- */
-
-    const duplicate =
+    const duplicateCheck =
       await supabaseRequest(
         "receipts?institution_id=eq." +
         INSTITUTION_ID +
         "&receipt_no=eq." +
-        encodeURIComponent(receiptNo.value) +
+        encodeURIComponent(receiptNo) +
         "&limit=1"
       );
 
 
-    if (
-      duplicate &&
-      duplicate.length > 0
-    ) {
+    if (duplicateCheck && duplicateCheck.length > 0) {
 
       toast(
-        "⚠️ এই রশিদ নম্বরটি ইতিমধ্যে ব্যবহৃত হয়েছে।"
+        "⚠️ এই রশিদ নম্বরটি ইতিমধ্যে ব্যবহৃত হয়েছে"
       );
 
-      receiptNo.value =
-        await generateReceiptNumber();
+      await generateNextReceiptNumber();
 
       return;
     }
 
 
-    /* ---------------------------------------------
-       রশিদ তথ্য
-    --------------------------------------------- */
+    const receiptData = {
 
-    const body = {
+      institution_id: INSTITUTION_ID,
 
-      institution_id:
-        INSTITUTION_ID,
+      receipt_no: receiptNo,
 
-      receipt_no:
-        receiptNo.value,
+      receipt_date: receiptDate,
 
-      receipt_date:
-        receiptDate.value,
-
-      donor_name:
-        donorNameValue,
+      donor_name: donorName,
 
       donor_address:
-        donorAddress
-          ? donorAddress.value.trim()
-          : "",
+        donorAddress || null,
 
       donor_mobile:
-        donorMobile
-          ? donorMobile.value.trim()
-          : "",
+        donorMobile || null,
 
-      fund_name:
-        fund.value,
+      fund_name: fundName,
 
-      amount:
-        amountValue,
+      amount: Number(amount),
 
-      payment_method:
-        paymentMethod.value,
+      payment_method: paymentMethod,
 
       purpose:
-        purpose
-          ? purpose.value.trim()
-          : "",
+        purpose || null,
 
       note:
-        note
-          ? note.value.trim()
-          : ""
+        note || null
 
     };
 
-
-    /* ---------------------------------------------
-       Supabase-এ সংরক্ষণ
-    --------------------------------------------- */
 
     const saved =
       await supabaseRequest(
         "receipts",
         {
           method: "POST",
-          body: body
+          body: receiptData,
+          prefer: "return=representation"
         }
       );
 
 
-    const savedReceipt =
-      saved && saved.length
-        ? saved[0]
-        : body;
+    if (!saved || saved.length === 0) {
 
-
-    receiptState.currentReceipt =
-      savedReceipt;
-
-
-    toast(
-      "✅ রশিদ সফলভাবে সংরক্ষণ হয়েছে।"
-    );
-
-
-    if (printAfterSave) {
-
-      setTimeout(function() {
-
-        printReceipt(
-          savedReceipt
-        );
-
-      }, 300);
-
-    } else {
-
-      setTimeout(function() {
-
-        showReceiptForm();
-
-      }, 500);
-
+      throw new Error(
+        "রশিদ সংরক্ষণ করা যায়নি"
+      );
     }
+
+
+    toast("✅ রশিদ সফলভাবে সংরক্ষণ হয়েছে");
+
+
+    const savedReceipt = saved[0];
+
+
+    setTimeout(function() {
+
+      printReceiptData(savedReceipt);
+
+    }, 300);
+
+
+    setTimeout(function() {
+
+      showReceiptForm();
+
+    }, 700);
 
 
   } catch (error) {
 
-    console.error(
-      "Save receipt error:",
-      error
-    );
+    console.error("Save receipt error:", error);
 
 
     const errorText =
-      String(
-        error.message || error
-      );
+      String(error.message || error);
 
 
     if (
       errorText.includes("duplicate") ||
-      errorText.includes("unique")
+      errorText.includes("unique") ||
+      errorText.includes("receipts_receipt_no_unique")
     ) {
 
       toast(
-        "⚠️ এই রশিদ নম্বরটি ইতিমধ্যে ব্যবহৃত হয়েছে।"
+        "⚠️ এই রশিদ নম্বরটি ইতিমধ্যে ব্যবহৃত হয়েছে"
       );
 
-    } else {
-
-      toast(
-        "❌ রশিদ সংরক্ষণ করা যায়নি।"
-      );
-
-    }
-
-  }
-}
-
-
-/* =====================================================
-   রশিদ তালিকা
-===================================================== */
-
-async function showReceiptList() {
-
-  const content =
-    document.getElementById("receiptContent");
-
-  if (!content) return;
-
-
-  content.innerHTML = `
-
-    <div class="card">
-
-      <h3>
-        📋 রশিদ তালিকা
-      </h3>
-
-
-      <div class="formgrid">
-
-
-        <div class="field">
-
-          <label>
-            তারিখ
-          </label>
-
-          <input
-            type="date"
-            id="receiptListDate"
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            খুঁজুন
-          </label>
-
-          <input
-            id="receiptSearch"
-            placeholder="রশিদ নম্বর / দাতার নাম / মোবাইল"
-          >
-
-        </div>
-
-
-      </div>
-
-
-      <div class="actions">
-
-        <button
-          class="btn"
-          onclick="loadReceiptList()"
-        >
-          🔍 খুঁজুন
-        </button>
-
-
-        <button
-          class="btn"
-          onclick="closeReceiptList()"
-        >
-          ✖ বন্ধ করুন
-        </button>
-
-      </div>
-
-
-      <div id="receiptListResult">
-
-        <p>
-          রশিদ তালিকা লোড হচ্ছে...
-        </p>
-
-      </div>
-
-    </div>
-
-  `;
-
-
-  loadReceiptList();
-}
-
-
-/* =====================================================
-   রশিদ তালিকা লোড
-===================================================== */
-
-async function loadReceiptList() {
-
-  const result =
-    document.getElementById(
-      "receiptListResult"
-    );
-
-  if (!result) return;
-
-
-  const dateInput =
-    document.getElementById(
-      "receiptListDate"
-    );
-
-  const searchInput =
-    document.getElementById(
-      "receiptSearch"
-    );
-
-
-  const selectedDate =
-    dateInput
-      ? dateInput.value
-      : "";
-
-
-  const searchText =
-    searchInput
-      ? searchInput.value
-          .trim()
-          .toLowerCase()
-      : "";
-
-
-  result.innerHTML =
-    "<p>⏳ রশিদ তালিকা লোড হচ্ছে...</p>";
-
-
-  try {
-
-    let query =
-      "receipts?institution_id=eq." +
-      INSTITUTION_ID +
-      "&order=receipt_date.desc,created_at.desc";
-
-
-    if (selectedDate) {
-
-      query +=
-        "&receipt_date=eq." +
-        encodeURIComponent(
-          selectedDate
-        );
-
-    }
-
-
-    const data =
-      await supabaseRequest(query);
-
-
-    let rows =
-      Array.isArray(data)
-        ? data
-        : [];
-
-
-    if (searchText) {
-
-      rows =
-        rows.filter(function(item) {
-
-          const text = [
-
-            item.receipt_no,
-            item.donor_name,
-            item.donor_mobile,
-            item.fund_name,
-            item.purpose
-
-          ]
-            .join(" ")
-            .toLowerCase();
-
-
-          return text.includes(
-            searchText
-          );
-
-        });
-
-    }
-
-
-    receiptState.receipts =
-      rows;
-
-
-    if (!rows.length) {
-
-      result.innerHTML = `
-
-        <div class="info">
-
-          <h3>
-            📭 কোনো রশিদ পাওয়া যায়নি
-          </h3>
-
-          <p>
-            আপনার দেওয়া তথ্য অনুযায়ী কোনো রশিদ পাওয়া যায়নি।
-          </p>
-
-        </div>
-
-      `;
+      await generateNextReceiptNumber();
 
       return;
     }
 
 
-    let html = `
-
-      <div class="tablewrap">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                ক্রমিক
-              </th>
-
-              <th>
-                রশিদ নং
-              </th>
-
-              <th>
-                তারিখ
-              </th>
-
-              <th>
-                দাতার নাম
-              </th>
-
-              <th>
-                ফান্ড
-              </th>
-
-              <th>
-                পরিমাণ
-              </th>
-
-              <th>
-                কাজ
-              </th>
-
-            </tr>
-
-          </thead>
+    toast(
+      "❌ রশিদ সংরক্ষণ করতে সমস্যা হয়েছে"
+    );
+  }
+}
 
 
-          <tbody>
+/* =====================================================
+   RECEIPT LIST
+===================================================== */
 
-    `;
+async function loadReceiptList() {
 
+  const result =
+    document.getElementById("receiptContent");
 
-    rows.forEach(function(
-      item,
-      index
-    ) {
-
-      html += `
-
-        <tr>
-
-          <td>
-            ${index + 1}
-          </td>
-
-          <td>
-            ${receiptSafe(
-              item.receipt_no
-            )}
-          </td>
-
-          <td>
-            ${receiptSafe(
-              item.receipt_date
-            )}
-          </td>
-
-          <td>
-            ${receiptSafe(
-              item.donor_name
-            )}
-          </td>
-
-          <td>
-            ${receiptSafe(
-              item.fund_name
-            )}
-          </td>
-
-          <td>
-            ${Number(
-              item.amount || 0
-            ).toLocaleString("bn-BD")}
-            টাকা
-          </td>
-
-          <td>
-
-            <button
-              class="btn"
-              onclick="printReceiptById('${receiptSafe(item.id)}')"
-            >
-              🖨️ প্রিন্ট
-            </button>
-
-          </td>
-
-        </tr>
-
-      `;
-
-    });
+  if (!result) {
+    return;
+  }
 
 
-    html += `
+  result.innerHTML = `
+    <div class="card" style="margin-top:20px;">
 
-          </tbody>
+      <h3>📋 রশিদ তালিকা</h3>
 
-        </table>
+      <div class="field">
+
+        <label>রশিদ খুঁজুন</label>
+
+        <input
+          id="receiptSearch"
+          type="text"
+          placeholder="রশিদ নম্বর / দাতার নাম / মোবাইল"
+          oninput="filterReceiptList()"
+        >
 
       </div>
 
-    `;
+      <div
+        id="receiptListTable"
+        style="overflow-x:auto;margin-top:15px;"
+      >
+        ⏳ রশিদ তালিকা লোড হচ্ছে...
+      </div>
+
+    </div>
+  `;
 
 
-    result.innerHTML =
-      html;
+  try {
+
+    const data =
+      await supabaseRequest(
+        "receipts?institution_id=eq." +
+        INSTITUTION_ID +
+        "&order=receipt_date.desc,created_at.desc"
+      );
+
+
+    window.allReceipts =
+      Array.isArray(data) ? data : [];
+
+
+    renderReceiptList(
+      window.allReceipts
+    );
 
 
   } catch (error) {
@@ -4243,9 +3788,1096 @@ async function loadReceiptList() {
     );
 
 
-    result.innerHTML = `
+    document.getElementById(
+      "receiptListTable"
+    ).innerHTML =
+      `
+        <div class="info">
+          ❌ রশিদ তালিকা লোড করা যায়নি।
+        </div>
+      `;
+  }
+}
+
+
+/* =====================================================
+   RENDER RECEIPT LIST
+===================================================== */
+
+function renderReceiptList(data) {
+
+  const container =
+    document.getElementById("receiptListTable");
+
+  if (!container) {
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML = `
+      <div class="info">
+        📭 এখনো কোনো রশিদ পাওয়া যায়নি।
+      </div>
+    `;
+
+    return;
+  }
+
+
+  let html = `
+
+    <table style="
+      width:100%;
+      border-collapse:collapse;
+      min-width:900px;
+    ">
+
+      <thead>
+
+        <tr>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            রশিদ নং
+          </th>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            তারিখ
+          </th>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            দাতার নাম
+          </th>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            ফান্ড
+          </th>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            পরিমাণ
+          </th>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            মাধ্যম
+          </th>
+
+          <th style="padding:10px;border:1px solid #ddd;">
+            কাজ
+          </th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+  `;
+
+
+  data.forEach(function(receipt) {
+
+    html += `
+
+      <tr>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+          ${receiptSafe(receipt.receipt_no)}
+        </td>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+          ${receiptSafe(receipt.receipt_date)}
+        </td>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+          ${receiptSafe(receipt.donor_name)}
+        </td>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+          ${receiptSafe(receipt.fund_name)}
+        </td>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+          ৳ ${Number(receipt.amount || 0).toLocaleString("bn-BD")}
+        </td>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+          ${receiptSafe(receipt.payment_method)}
+        </td>
+
+        <td style="padding:8px;border:1px solid #ddd;">
+
+          <button
+            class="btn"
+            onclick="printReceiptById('${receipt.id}')"
+          >
+            🖨️ প্রিন্ট
+          </button>
+
+        </td>
+
+      </tr>
+
+    `;
+  });
+
+
+  html += `
+
+      </tbody>
+
+    </table>
+
+  `;
+
+
+  container.innerHTML = html;
+}
+
+
+/* =====================================================
+   FILTER RECEIPT LIST
+===================================================== */
+
+function filterReceiptList() {
+
+  const input =
+    document.getElementById("receiptSearch");
+
+  if (!input) {
+    return;
+  }
+
+
+  const search =
+    input.value.trim().toLowerCase();
+
+
+  if (!window.allReceipts) {
+    return;
+  }
+
+
+  if (!search) {
+
+    renderReceiptList(
+      window.allReceipts
+    );
+
+    return;
+  }
+
+
+  const filtered =
+    window.allReceipts.filter(
+      function(receipt) {
+
+        const text = [
+
+          receipt.receipt_no,
+          receipt.donor_name,
+          receipt.donor_mobile,
+          receipt.fund_name,
+          receipt.payment_method
+
+        ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+
+        return text.includes(search);
+      }
+    );
+
+
+  renderReceiptList(filtered);
+}
+
+
+/* =====================================================
+   PRINT RECEIPT BY ID
+===================================================== */
+
+async function printReceiptById(id) {
+
+  try {
+
+    const data =
+      await supabaseRequest(
+        "receipts?id=eq." +
+        encodeURIComponent(id) +
+        "&institution_id=eq." +
+        INSTITUTION_ID +
+        "&limit=1"
+      );
+
+
+    if (!data || data.length === 0) {
+
+      toast("❌ রশিদ পাওয়া যায়নি");
+
+      return;
+    }
+
+
+    printReceiptData(data[0]);
+
+
+  } catch (error) {
+
+    console.error(
+      "Print receipt error:",
+      error
+    );
+
+    toast(
+      "❌ রশিদ প্রিন্ট করা যায়নি"
+    );
+  }
+}
+
+
+/* =====================================================
+   PRINT RECEIPT DATA
+===================================================== */
+
+function printReceiptData(receipt) {
+
+  const printWindow =
+    window.open(
+      "",
+      "_blank",
+      "width=800,height=900"
+    );
+
+
+  if (!printWindow) {
+
+    toast(
+      "⚠️ প্রিন্ট উইন্ডো খোলা যায়নি। ব্রাউজারের Popup অনুমতি দিন।"
+    );
+
+    return;
+  }
+
+
+  const madrasaName =
+    "কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা";
+
+
+  const amount =
+    Number(receipt.amount || 0);
+
+
+  printWindow.document.write(`
+
+    <!DOCTYPE html>
+
+    <html lang="bn">
+
+    <head>
+
+      <meta charset="UTF-8">
+
+      <title>
+        ${receiptSafe(receipt.receipt_no)}
+      </title>
+
+      <style>
+
+        body {
+          font-family:
+            "Noto Sans Bengali",
+            "SolaimanLipi",
+            Arial,
+            sans-serif;
+
+          margin:0;
+          padding:30px;
+          background:#fff;
+        }
+
+        .receipt {
+          max-width:700px;
+          margin:auto;
+          border:2px solid #222;
+          padding:25px;
+        }
+
+        .header {
+          text-align:center;
+          border-bottom:1px solid #222;
+          padding-bottom:15px;
+          margin-bottom:20px;
+        }
+
+        .header h1 {
+          margin:0 0 8px;
+          font-size:25px;
+        }
+
+        .header p {
+          margin:3px 0;
+        }
+
+        .receipt-title {
+          text-align:center;
+          font-size:22px;
+          font-weight:bold;
+          margin:15px 0;
+        }
+
+        .row {
+          display:flex;
+          justify-content:space-between;
+          gap:20px;
+          border-bottom:1px solid #ddd;
+          padding:9px 0;
+        }
+
+        .label {
+          font-weight:bold;
+        }
+
+        .amount {
+          font-size:22px;
+          font-weight:bold;
+          text-align:center;
+          border:2px solid #222;
+          padding:12px;
+          margin:20px 0;
+        }
+
+        .signatures {
+          display:flex;
+          justify-content:space-between;
+          margin-top:70px;
+        }
+
+        .signature {
+          width:40%;
+          text-align:center;
+          border-top:1px solid #222;
+          padding-top:8px;
+        }
+
+        .thanks {
+          text-align:center;
+          margin-top:30px;
+          font-weight:bold;
+        }
+
+        @media print {
+
+          body {
+            padding:0;
+          }
+
+          .receipt {
+            border:2px solid #222;
+          }
+
+        }
+
+      </style>
+
+    </head>
+
+    <body>
+
+      <div class="receipt">
+
+        <div class="header">
+
+          <h1>
+            ${receiptSafe(madrasaName)}
+          </h1>
+
+          <p>
+            প্রতিষ্ঠিত: ১৯৯৬
+          </p>
+
+        </div>
+
+        <div class="receipt-title">
+          🧾 টাকা গ্রহণের রশিদ
+        </div>
+
+        <div class="row">
+          <span class="label">রশিদ নম্বর</span>
+          <span>${receiptSafe(receipt.receipt_no)}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">তারিখ</span>
+          <span>${receiptSafe(receipt.receipt_date)}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">দাতার নাম</span>
+          <span>${receiptSafe(receipt.donor_name)}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">মোবাইল</span>
+          <span>${receiptSafe(receipt.donor_mobile || "—")}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">ঠিকানা</span>
+          <span>${receiptSafe(receipt.donor_address || "—")}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">ফান্ড / খাত</span>
+          <span>${receiptSafe(receipt.fund_name)}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">পরিশোধের মাধ্যম</span>
+          <span>${receiptSafe(receipt.payment_method)}</span>
+        </div>
+
+        <div class="row">
+          <span class="label">উদ্দেশ্য</span>
+          <span>${receiptSafe(receipt.purpose || "—")}</span>
+        </div>
+
+        <div class="amount">
+          মোট গ্রহণ: ৳ ${amount.toLocaleString("bn-BD")}
+        </div>
+
+        <div class="row">
+          <span class="label">নোট</span>
+          <span>${receiptSafe(receipt.note || "—")}</span>
+        </div>
+
+        <div class="thanks">
+          আল্লাহ তাআলা আপনার দান কবুল করুন।
+        </div>
+
+        <div class="signatures">
+
+          <div class="signature">
+            মুহতামিম সাহেব
+          </div>
+
+          <div class="signature">
+            নাজেমে তালিমাত সাহেব
+          </div>
+
+        </div>
+
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      <\/script>
+
+    </body>
+
+    </html>
+
+  `);
+
+  printWindow.document.close();
+}
+
+
+/* =====================================================
+   DAILY RECEIPT REPORT
+===================================================== */
+
+async function loadReceiptDailyReport() {
+
+  const result =
+    document.getElementById("receiptContent");
+
+  if (!result) {
+    return;
+  }
+
+
+  const today =
+    new Date().toISOString().split("T")[0];
+
+
+  result.innerHTML = `
+
+    <div class="card" style="margin-top:20px;">
+
+      <h3>📊 দৈনিক রশিদ রিপোর্ট</h3>
+
+      <div class="formgrid">
+
+        <div class="field">
+
+          <label>
+            তারিখ নির্বাচন করুন
+          </label>
+
+          <input
+            id="receiptReportDate"
+            type="date"
+            value="${today}"
+            onchange="generateReceiptDailyReport()"
+          >
+
+        </div>
+
+      </div>
 
       <div
+        id="receiptDailyReportResult"
+        style="margin-top:20px;"
+      >
+        ⏳ রিপোর্ট তৈরি হচ্ছে...
+      </div>
+
+    </div>
+
+  `;
+
+
+  await generateReceiptDailyReport();
+}
+
+
+/* =====================================================
+   GENERATE DAILY REPORT
+===================================================== */
+
+async function generateReceiptDailyReport() {
+
+  const dateInput =
+    document.getElementById("receiptReportDate");
+
+  const result =
+    document.getElementById(
+      "receiptDailyReportResult"
+    );
+
+
+  if (!dateInput || !result) {
+    return;
+  }
+
+
+  const selectedDate =
+    dateInput.value;
+
+
+  if (!selectedDate) {
+
+    result.innerHTML =
+      `
+        <div class="info">
+          ⚠️ তারিখ নির্বাচন করুন।
+        </div>
+      `;
+
+    return;
+  }
+
+
+  try {
+
+    const data =
+      await supabaseRequest(
+        "receipts?institution_id=eq." +
+        INSTITUTION_ID +
+        "&receipt_date=eq." +
+        encodeURIComponent(selectedDate) +
+        "&order=created_at.asc"
+      );
+
+
+    const receipts =
+      Array.isArray(data) ? data : [];
+
+
+    let totalAmount = 0;
+
+
+    const fundTotals = {};
+
+
+    receipts.forEach(
+      function(receipt) {
+
+        const amount =
+          Number(receipt.amount || 0);
+
+
+        totalAmount += amount;
+
+
+        const fund =
+          receipt.fund_name || "অন্যান্য";
+
+
+        if (!fundTotals[fund]) {
+          fundTotals[fund] = 0;
+        }
+
+
+        fundTotals[fund] += amount;
+      }
+    );
+
+
+    let fundHtml = "";
+
+
+    Object.keys(fundTotals).forEach(
+      function(fund) {
+
+        fundHtml += `
+
+          <tr>
+
+            <td style="padding:8px;border:1px solid #ddd;">
+              ${receiptSafe(fund)}
+            </td>
+
+            <td style="padding:8px;border:1px solid #ddd;">
+              ৳ ${fundTotals[fund].toLocaleString("bn-BD")}
+            </td>
+
+          </tr>
+
+        `;
+      }
+    );
+
+
+    if (!fundHtml) {
+
+      fundHtml = `
+
+        <tr>
+
+          <td
+            colspan="2"
+            style="padding:10px;border:1px solid #ddd;text-align:center;"
+          >
+            কোনো রশিদ নেই
+          </td>
+
+        </tr>
+
+      `;
+    }
+
+
+    result.innerHTML = `
+
+      <div class="cards2">
+
+        <div class="info">
+
+          <h3>🧾 মোট রশিদ</h3>
+
+          <p>
+            ${receipts.length.toLocaleString("bn-BD")} টি
+          </p>
+
+        </div>
+
+        <div class="info">
+
+          <h3>💰 মোট আদায়</h3>
+
+          <p>
+            ৳ ${totalAmount.toLocaleString("bn-BD")}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="card" style="margin-top:20px;">
+
+        <h3>
+          📊 ফান্ডভিত্তিক হিসাব
+        </h3>
+
+        <div style="overflow-x:auto;">
+
+          <table style="
+            width:100%;
+            border-collapse:collapse;
+            min-width:400px;
+          ">
+
+            <thead>
+
+              <tr>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  ফান্ড
+                </th>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  মোট
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${fundHtml}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <div class="card" style="margin-top:20px;">
+
+        <h3>
+          📋 ${receiptSafe(selectedDate)} তারিখের রশিদসমূহ
+        </h3>
+
+        <div style="overflow-x:auto;">
+
+          <table style="
+            width:100%;
+            border-collapse:collapse;
+            min-width:800px;
+          ">
+
+            <thead>
+
+              <tr>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  রশিদ নং
+                </th>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  দাতা
+                </th>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  ফান্ড
+                </th>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  পরিমাণ
+                </th>
+
+                <th style="padding:8px;border:1px solid #ddd;">
+                  মাধ্যম
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${
+                receipts.length
+                ?
+                receipts.map(
+                  function(receipt) {
+
+                    return `
+
+                      <tr>
+
+                        <td style="padding:8px;border:1px solid #ddd;">
+                          ${receiptSafe(receipt.receipt_no)}
+                        </td>
+
+                        <td style="padding:8px;border:1px solid #ddd;">
+                          ${receiptSafe(receipt.donor_name)}
+                        </td>
+
+                        <td style="padding:8px;border:1px solid #ddd;">
+                          ${receiptSafe(receipt.fund_name)}
+                        </td>
+
+                        <td style="padding:8px;border:1px solid #ddd;">
+                          ৳ ${Number(receipt.amount || 0).toLocaleString("bn-BD")}
+                        </td>
+
+                        <td style="padding:8px;border:1px solid #ddd;">
+                          ${receiptSafe(receipt.payment_method)}
+                        </td>
+
+                      </tr>
+
+                    `;
+                  }
+                ).join("")
+                :
+                `
+                  <tr>
+
+                    <td
+                      colspan="5"
+                      style="padding:12px;border:1px solid #ddd;text-align:center;"
+                    >
+                      📭 এই তারিখে কোনো রশিদ নেই।
+                    </td>
+
+                  </tr>
+                `
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="btn"
+          onclick="printReceiptDailyReport()"
+        >
+          🖨️ দৈনিক রিপোর্ট প্রিন্ট
+        </button>
+
+      </div>
+
+    `;
+
+
+    window.currentReceiptDailyReport = {
+      date: selectedDate,
+      receipts: receipts,
+      totalAmount: totalAmount,
+      fundTotals: fundTotals
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "Daily report error:",
+      error
+    );
+
+
+    result.innerHTML = `
+
+      <div class="info">
+
+        ❌ দৈনিক রিপোর্ট তৈরি করা যায়নি।
+
+      </div>
+
+    `;
+  }
+}
+
+
+/* =====================================================
+   PRINT DAILY REPORT
+===================================================== */
+
+function printReceiptDailyReport() {
+
+  const report =
+    window.currentReceiptDailyReport;
+
+
+  if (!report) {
+
+    toast(
+      "⚠️ আগে দৈনিক রিপোর্ট তৈরি করুন"
+    );
+
+    return;
+  }
+
+
+  const printWindow =
+    window.open(
+      "",
+      "_blank",
+      "width=900,height=900"
+    );
+
+
+  if (!printWindow) {
+
+    toast(
+      "⚠️ প্রিন্ট উইন্ডো খোলা যায়নি"
+    );
+
+    return;
+  }
+
+
+  const madrasaName =
+    "কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা";
+
+
+  let rows = "";
+
+
+  report.receipts.forEach(
+    function(receipt) {
+
+      rows += `
+
+        <tr>
+
+          <td>
+            ${receiptSafe(receipt.receipt_no)}
+          </td>
+
+          <td>
+            ${receiptSafe(receipt.donor_name)}
+          </td>
+
+          <td>
+            ${receiptSafe(receipt.fund_name)}
+          </td>
+
+          <td>
+            ৳ ${Number(receipt.amount || 0).toLocaleString("bn-BD")}
+          </td>
+
+          <td>
+            ${receiptSafe(receipt.payment_method)}
+          </td>
+
+        </tr>
+
+      `;
+    }
+  );
+
+
+  if (!rows) {
+
+    rows = `
+
+      <tr>
+
+        <td colspan="5">
+          এই তারিখে কোনো রশিদ নেই।
+        </td>
+
+      </tr>
+
+    `;
+  }
+
+
+  printWindow.document.write(`
+
+    <!DOCTYPE html>
+
+    <html lang="bn">
+
+    <head>
+
+      <meta charset="UTF-8">
+
+      <title>
+        দৈনিক রশিদ রিপোর্ট
+      </title>
+
+      <style>
+
+        body {
+          font-family:
+            "Noto Sans Bengali",
+            "SolaimanLipi",
+            Arial,
+            sans-serif;
+
+          padding:25px;
+        }
+
+        h1,
+        h2,
+        p {
+          text-align:center;
+        }
+
+        table {
+          width:100%;
+          border-collapse:collapse;
+          margin-top:20px;
+        }
+
+        th,
+        td {
+          border:1px solid #222;
+          padding:8px;
+          text-align:center;
+        }
+
+        .summary {
+          display:flex;
+          justify-content:space-around;
+          margin:20px 0;
+          font-size:18px;
+          font-weight:bold;
+        }
+
+      </style>
+
+    </head>
+
+    <body>
+
+      <h1>
+        ${receiptSafe(madrasaName)}
+      </h1>
+
+      <p>
+        প্রতিষ্ঠিত: ১৯৯৬
+      </p>
+
+      <h2>
+        📊 দৈনিক রশিদ রিপোর্ট
+      </h2>
+
+      <p>
+        তারিখ: ${receiptSafe(report.date)}
+      </p>
+
+      <div class="summary">
+
+        <div>
+          মোট রশিদ:
+          ${report.receipts.length.toLocaleString("bn-BD")} টি
+        </div>
+
+        <div>
+          মোট আদায়:
+          ৳ ${Number(report.totalAmount || 0).toLocaleString("bn-BD")}
+        </div>
+
+      </div>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
 
 /* =====================================================
    DASHBOARD
