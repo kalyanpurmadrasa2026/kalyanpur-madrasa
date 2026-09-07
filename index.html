@@ -3425,6 +3425,457 @@ async function saveReceipt() {
     toast("রশিদ সংরক্ষণ করা যায়নি");
   }
 }
+  function printReceipt() {
+  const receiptNo = document.getElementById("receiptNo")?.value.trim() || "";
+  const receiptDate = document.getElementById("receiptDate")?.value || "";
+  const donorName = document.getElementById("receiptDonorName")?.value.trim() || "";
+  const donorMobile = document.getElementById("receiptDonorMobile")?.value.trim() || "";
+  const donorAddress = document.getElementById("receiptDonorAddress")?.value.trim() || "";
+  const fundName = document.getElementById("receiptFund")?.value || "";
+  const amount = document.getElementById("receiptAmount")?.value || "";
+  const paymentMethod = document.getElementById("receiptPaymentMethod")?.value || "";
+  const purpose = document.getElementById("receiptPurpose")?.value.trim() || "";
+  const note = document.getElementById("receiptNote")?.value.trim() || "";
+
+  if (!donorName || !fundName || !amount || !paymentMethod) {
+    toast("প্রথমে রশিদের তথ্য সম্পূর্ণ পূরণ করুন");
+    return;
+  }
+
+  const amountNumber = Number(amount);
+  const amountText = numberToBanglaWords(amountNumber);
+
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    toast("প্রিন্ট উইন্ডো খোলা যায়নি। ব্রাউজারের Pop-up অনুমতি দিন।");
+    return;
+  }
+
+  printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>রশিদ - ${receiptNo}</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Noto Sans Bengali", "SolaimanLipi", Arial, sans-serif;
+    background: #f3f3f3;
+    color: #111;
+  }
+
+  .receipt {
+    width: 800px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    border: 2px solid #222;
+    padding: 28px;
+  }
+
+  .header {
+    text-align: center;
+    border-bottom: 2px solid #222;
+    padding-bottom: 15px;
+    margin-bottom: 18px;
+  }
+
+  .header h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+  }
+
+  .header p {
+    margin: 3px 0;
+    font-size: 15px;
+  }
+
+  .receipt-title {
+    text-align: center;
+    margin: 15px 0;
+  }
+
+  .receipt-title span {
+    display: inline-block;
+    border: 2px solid #222;
+    padding: 7px 25px;
+    font-size: 21px;
+    font-weight: bold;
+  }
+
+  .top-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    font-size: 15px;
+  }
+
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  .info-table td {
+    border: 1px solid #777;
+    padding: 10px;
+    font-size: 15px;
+  }
+
+  .label {
+    width: 25%;
+    font-weight: bold;
+    background: #f5f5f5;
+  }
+
+  .amount-box {
+    margin-top: 18px;
+    border: 2px solid #222;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .amount-box .amount {
+    font-size: 25px;
+    font-weight: bold;
+  }
+
+  .amount-words {
+    margin-top: 7px;
+    font-size: 15px;
+  }
+
+  .thanks {
+    text-align: center;
+    margin: 22px 0;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .signatures {
+    display: flex;
+    justify-content: space-between;
+    gap: 25px;
+    margin-top: 55px;
+    text-align: center;
+  }
+
+  .signature {
+    width: 33.33%;
+  }
+
+  .signature-line {
+    border-top: 1px solid #222;
+    margin-bottom: 7px;
+  }
+
+  .signature strong {
+    font-size: 14px;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 12px;
+    color: #555;
+  }
+
+  @media print {
+    body {
+      background: white;
+      padding: 0;
+    }
+
+    .receipt {
+      width: 100%;
+      border: 2px solid #222;
+      margin: 0;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="receipt">
+
+  <div class="header">
+    <h1>কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা</h1>
+    <p>প্রতিষ্ঠিত: ১৯৯৬ খ্রিষ্টাব্দ</p>
+  </div>
+
+  <div class="receipt-title">
+    <span>🧾 রশিদ</span>
+  </div>
+
+  <div class="top-info">
+    <div>
+      <strong>রশিদ নং:</strong> ${receiptNo}
+    </div>
+
+    <div>
+      <strong>তারিখ:</strong> ${receiptDate}
+    </div>
+  </div>
+
+  <table class="info-table">
+
+    <tr>
+      <td class="label">দাতার নাম</td>
+      <td>${donorName}</td>
+    </tr>
+
+    <tr>
+      <td class="label">মোবাইল</td>
+      <td>${donorMobile || "—"}</td>
+    </tr>
+
+    <tr>
+      <td class="label">ঠিকানা</td>
+      <td>${donorAddress || "—"}</td>
+    </tr>
+
+    <tr>
+      <td class="label">ফান্ড</td>
+      <td>${fundName}</td>
+    </tr>
+
+    <tr>
+      <td class="label">পরিশোধের মাধ্যম</td>
+      <td>${paymentMethod}</td>
+    </tr>
+
+    <tr>
+      <td class="label">উদ্দেশ্য</td>
+      <td>${purpose || "—"}</td>
+    </tr>
+
+    <tr>
+      <td class="label">নোট</td>
+      <td>${note || "—"}</td>
+    </tr>
+
+  </table>
+
+  <div class="amount-box">
+    <div class="amount">
+      মোট টাকা: ${amountNumber.toLocaleString("bn-BD")} টাকা
+    </div>
+
+    <div class="amount-words">
+      কথায়: ${amountText} টাকা মাত্র
+    </div>
+  </div>
+
+  <div class="thanks">
+    আল্লাহ তাআলা আপনার দানকে কবুল করুন এবং উত্তম প্রতিদান দান করুন। আমিন।
+  </div>
+
+  <div class="signatures">
+
+    <div class="signature">
+      <div class="signature-line"></div>
+      <strong>হিসাব রক্ষক</strong>
+    </div>
+
+    <div class="signature">
+      <div class="signature-line"></div>
+      <strong>নাজেমে তালিমাত সাহেব</strong>
+    </div>
+
+    <div class="signature">
+      <div class="signature-line"></div>
+      <strong>মুহতামিম সাহেব</strong>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    এটি মাদ্রাসার হিসাব ব্যবস্থাপনা থেকে তৈরি করা রশিদ।
+  </div>
+
+</div>
+
+<script>
+  window.onload = function() {
+    window.print();
+  };
+<\/script>
+
+</body>
+</html>
+  `);
+
+  printWindow.document.close();
+}
+
+
+function numberToBanglaWords(number) {
+  number = Number(number);
+
+  if (!Number.isFinite(number) || number < 0) {
+    return "";
+  }
+
+  if (number === 0) {
+    return "শূন্য";
+  }
+
+  const ones = [
+    "",
+    "এক",
+    "দুই",
+    "তিন",
+    "চার",
+    "পাঁচ",
+    "ছয়",
+    "সাত",
+    "আট",
+    "নয়"
+  ];
+
+  const tens = [
+    "",
+    "দশ",
+    "বিশ",
+    "ত্রিশ",
+    "চল্লিশ",
+    "পঞ্চাশ",
+    "ষাট",
+    "সত্তর",
+    "আশি",
+    "নব্বই"
+  ];
+
+  function twoDigitWords(n) {
+    if (n < 10) {
+      return ones[n];
+    }
+
+    if (n % 10 === 0) {
+      return tens[Math.floor(n / 10)];
+    }
+
+    const special = {
+      11: "এগারো",
+      12: "বারো",
+      13: "তেরো",
+      14: "চৌদ্দ",
+      15: "পনেরো",
+      16: "ষোল",
+      17: "সতেরো",
+      18: "আঠারো",
+      19: "উনিশ",
+      21: "একুশ",
+      22: "বাইশ",
+      23: "তেইশ",
+      24: "চব্বিশ",
+      25: "পঁচিশ",
+      26: "ছাব্বিশ",
+      27: "সাতাশ",
+      28: "আটাশ",
+      29: "উনত্রিশ",
+      31: "একত্রিশ",
+      32: "বত্রিশ",
+      33: "তেত্রিশ",
+      34: "চৌত্রিশ",
+      35: "পঁয়ত্রিশ",
+      36: "ছত্রিশ",
+      37: "সাঁইত্রিশ",
+      38: "আটত্রিশ",
+      39: "উনচল্লিশ",
+      41: "একচল্লিশ",
+      42: "বিয়াল্লিশ",
+      43: "তেতাল্লিশ",
+      44: "চুয়াল্লিশ",
+      45: "পঁয়তাল্লিশ",
+      46: "ছেচল্লিশ",
+      47: "সাতচল্লিশ",
+      48: "আটচল্লিশ",
+      49: "উনপঞ্চাশ",
+      51: "একান্ন",
+      52: "বাহান্ন",
+      53: "তিপ্পান্ন",
+      54: "চুয়ান্ন",
+      55: "পঞ্চান্ন",
+      56: "ছাপ্পান্ন",
+      57: "সাতান্ন",
+      58: "আটান্ন",
+      59: "উনষাট",
+      61: "একষট্টি",
+      62: "বাষট্টি",
+      63: "তেষট্টি",
+      64: "চৌষট্টি",
+      65: "পঁয়ষট্টি",
+      66: "ছেষট্টি",
+      67: "সাতষট্টি",
+      68: "আটষট্টি",
+      69: "উনসত্তর",
+      71: "একাত্তর",
+      72: "বাহাত্তর",
+      73: "তিয়াত্তর",
+      74: "চুয়াত্তর",
+      75: "পঁচাত্তর",
+      76: "ছিয়াত্তর",
+      77: "সাতাত্তর",
+      78: "আটাত্তর",
+      79: "উনআশি",
+      81: "একাশি",
+      82: "বিরাশি",
+      83: "তিরাশি",
+      84: "চুরাশি",
+      85: "পঁচাশি",
+      86: "ছিয়াশি",
+      87: "সাতাশি",
+      88: "আটাশি",
+      89: "উননব্বই"
+    };
+
+    return special[n] || (tens[Math.floor(n / 10)] + " " + ones[n % 10]);
+  }
+
+  function convert(n) {
+    if (n < 100) {
+      return twoDigitWords(n);
+    }
+
+    if (n < 1000) {
+      const hundred = Math.floor(n / 100);
+      const rest = n % 100;
+
+      return ones[hundred] + " শত" + (rest ? " " + convert(rest) : "");
+    }
+
+    if (n < 100000) {
+      const thousand = Math.floor(n / 1000);
+      const rest = n % 1000;
+
+      return convert(thousand) + " হাজার" + (rest ? " " + convert(rest) : "");
+    }
+
+    if (n < 10000000) {
+      const lakh = Math.floor(n / 100000);
+      const rest = n % 100000;
+
+      return convert(lakh) + " লক্ষ" + (rest ? " " + convert(rest) : "");
+    }
+
+    const crore = Math.floor(n / 10000000);
+    const rest = n % 10000000;
+
+    return convert(crore) + " কোটি" + (rest ? " " + convert(rest) : "");
+  }
+
+  return convert(Math.floor(number));
+}
 /* =====================================================
    DASHBOARD
 ===================================================== */
