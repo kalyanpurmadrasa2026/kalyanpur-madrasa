@@ -3481,7 +3481,7 @@ async function saveReceipt() {
     padding: 28px;
   }
 
-  .header {
+ .header {
     text-align: center;
     border-bottom: 2px solid #222;
     padding-bottom: 15px;
@@ -3490,14 +3490,23 @@ async function saveReceipt() {
 
   .header h1 {
     margin: 0 0 6px;
-    font-size: 26px;
+    font-size: 21px;
+    line-height: 1.5;
+    font-weight: bold;
   }
 
   .header p {
-    margin: 3px 0;
+    margin: 4px 0;
     font-size: 15px;
   }
 
+  .header .address {
+    font-size: 15px;
+  }
+
+  .header .established {
+    font-size: 14px;
+  }
   .receipt-title {
     text-align: center;
     margin: 15px 0;
@@ -3608,8 +3617,17 @@ async function saveReceipt() {
 <div class="receipt">
 
   <div class="header">
+
     <h1>কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা</h1>
-    <p>প্রতিষ্ঠিত: ১৯৯৬ খ্রিষ্টাব্দ</p>
+
+    <p class="address">
+      কল্যাণপুর, নেপালতলী, গাবতলী, বগুড়া
+    </p>
+
+    <p class="established">
+      প্রতিষ্ঠিত: ১৯৯৬ খ্রিষ্টাব্দ
+    </p>
+
   </div>
 
   <div class="receipt-title">
