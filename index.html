@@ -4941,6 +4941,262 @@ function numberToBanglaWords(number) {
 
   return convert(Math.floor(number));
 }
+  /* =====================================================
+   RECEIPT LIST
+===================================================== */
+
+function showReceiptList() {
+
+  const result = document.getElementById("receiptContent");
+
+  if (!result) {
+    toast("রশিদ তালিকার জায়গা পাওয়া যায়নি");
+    return;
+  }
+
+  result.innerHTML = `
+
+    <div class="card" style="
+      margin-top:20px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid #e0e7ff;
+      box-shadow:0 8px 25px rgba(0,0,0,0.08);
+    ">
+
+      <div style="
+        background:linear-gradient(135deg,#0f766e,#16a34a);
+        color:white;
+        padding:22px;
+        text-align:center;
+      ">
+
+        <div style="
+          font-size:36px;
+          margin-bottom:5px;
+        ">
+          🧾
+        </div>
+
+        <h3 style="
+          margin:0;
+          font-size:22px;
+        ">
+          রশিদ তালিকা
+        </h3>
+
+        <p style="
+          margin:7px 0 0;
+          opacity:.9;
+          font-size:14px;
+        ">
+          মাদ্রাসার সকল দান ও অনুদানের রশিদ
+        </p>
+
+      </div>
+
+      <div style="
+        padding:20px;
+      ">
+
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+          gap:15px;
+          margin-bottom:20px;
+        ">
+
+          <div style="
+            background:#eff6ff;
+            border:1px solid #bfdbfe;
+            border-radius:14px;
+            padding:16px;
+            text-align:center;
+          ">
+
+            <div style="
+              font-size:28px;
+            ">
+              🧾
+            </div>
+
+            <div style="
+              color:#475569;
+              font-size:14px;
+              margin-top:5px;
+            ">
+              মোট রশিদ
+            </div>
+
+            <strong style="
+              display:block;
+              font-size:24px;
+              margin-top:5px;
+              color:#1d4ed8;
+            ">
+              ০
+            </strong>
+
+          </div>
+
+
+          <div style="
+            background:#f0fdf4;
+            border:1px solid #bbf7d0;
+            border-radius:14px;
+            padding:16px;
+            text-align:center;
+          ">
+
+            <div style="
+              font-size:28px;
+            ">
+              💰
+            </div>
+
+            <div style="
+              color:#475569;
+              font-size:14px;
+              margin-top:5px;
+            ">
+              মোট আদায়
+            </div>
+
+            <strong style="
+              display:block;
+              font-size:24px;
+              margin-top:5px;
+              color:#15803d;
+            ">
+              ০ টাকা
+            </strong>
+
+          </div>
+
+
+          <div style="
+            background:#fff7ed;
+            border:1px solid #fed7aa;
+            border-radius:14px;
+            padding:16px;
+            text-align:center;
+          ">
+
+            <div style="
+              font-size:28px;
+            ">
+              📅
+            </div>
+
+            <div style="
+              color:#475569;
+              font-size:14px;
+              margin-top:5px;
+            ">
+              আজকের রশিদ
+            </div>
+
+            <strong style="
+              display:block;
+              font-size:24px;
+              margin-top:5px;
+              color:#c2410c;
+            ">
+              ০
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:10px;
+          margin-bottom:20px;
+        ">
+
+          <input
+            type="text"
+            placeholder="🔎 রশিদ নম্বর বা দাতার নাম লিখুন"
+            style="
+              flex:1;
+              min-width:220px;
+              padding:12px 14px;
+              border:1px solid #cbd5e1;
+              border-radius:10px;
+              font-size:14px;
+            "
+          >
+
+          <input
+            type="date"
+            style="
+              padding:12px 14px;
+              border:1px solid #cbd5e1;
+              border-radius:10px;
+              font-size:14px;
+            "
+          >
+
+        </div>
+
+
+        <div style="
+          background:#f8fafc;
+          border:1px dashed #cbd5e1;
+          border-radius:14px;
+          padding:35px 20px;
+          text-align:center;
+          color:#64748b;
+        ">
+
+          <div style="
+            font-size:45px;
+            margin-bottom:10px;
+          ">
+            📋
+          </div>
+
+          <strong style="
+            display:block;
+            font-size:18px;
+            color:#334155;
+            margin-bottom:5px;
+          ">
+            রশিদ তালিকা প্রস্তুত হচ্ছে
+          </strong>
+
+          <span style="
+            font-size:14px;
+          ">
+            সংরক্ষিত রশিদগুলো এখানে দেখা যাবে।
+          </span>
+
+        </div>
+
+
+        <div style="
+          margin-top:20px;
+          text-align:center;
+        ">
+
+          <button
+            class="btn"
+            onclick="showReceiptForm()"
+          >
+            ➕ নতুন রশিদ তৈরি
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+}
 /* =====================================================
    DASHBOARD
 ===================================================== */
