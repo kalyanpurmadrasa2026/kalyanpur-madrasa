@@ -4941,11 +4941,11 @@ function numberToBanglaWords(number) {
 
   return convert(Math.floor(number));
 }
-  /* =====================================================
+ /* =====================================================
    RECEIPT LIST
 ===================================================== */
 
-function showReceiptList() {
+async function showReceiptList() {
 
   const result = document.getElementById("receiptContent");
 
@@ -4955,7 +4955,6 @@ function showReceiptList() {
   }
 
   result.innerHTML = `
-
     <div class="card" style="
       margin-top:20px;
       border-radius:18px;
@@ -4970,18 +4969,9 @@ function showReceiptList() {
         padding:22px;
         text-align:center;
       ">
+        <div style="font-size:36px;">🧾</div>
 
-        <div style="
-          font-size:36px;
-          margin-bottom:5px;
-        ">
-          🧾
-        </div>
-
-        <h3 style="
-          margin:0;
-          font-size:22px;
-        ">
+        <h3 style="margin:0;font-size:22px;">
           রশিদ তালিকা
         </h3>
 
@@ -4992,12 +4982,9 @@ function showReceiptList() {
         ">
           মাদ্রাসার সকল দান ও অনুদানের রশিদ
         </p>
-
       </div>
 
-      <div style="
-        padding:20px;
-      ">
+      <div style="padding:20px;">
 
         <div style="
           display:grid;
@@ -5013,12 +5000,7 @@ function showReceiptList() {
             padding:16px;
             text-align:center;
           ">
-
-            <div style="
-              font-size:28px;
-            ">
-              🧾
-            </div>
+            <div style="font-size:28px;">🧾</div>
 
             <div style="
               color:#475569;
@@ -5028,7 +5010,7 @@ function showReceiptList() {
               মোট রশিদ
             </div>
 
-            <strong style="
+            <strong id="receiptTotalCount" style="
               display:block;
               font-size:24px;
               margin-top:5px;
@@ -5036,7 +5018,6 @@ function showReceiptList() {
             ">
               ০
             </strong>
-
           </div>
 
 
@@ -5047,12 +5028,7 @@ function showReceiptList() {
             padding:16px;
             text-align:center;
           ">
-
-            <div style="
-              font-size:28px;
-            ">
-              💰
-            </div>
+            <div style="font-size:28px;">💰</div>
 
             <div style="
               color:#475569;
@@ -5062,7 +5038,7 @@ function showReceiptList() {
               মোট আদায়
             </div>
 
-            <strong style="
+            <strong id="receiptTotalAmount" style="
               display:block;
               font-size:24px;
               margin-top:5px;
@@ -5070,7 +5046,6 @@ function showReceiptList() {
             ">
               ০ টাকা
             </strong>
-
           </div>
 
 
@@ -5081,12 +5056,7 @@ function showReceiptList() {
             padding:16px;
             text-align:center;
           ">
-
-            <div style="
-              font-size:28px;
-            ">
-              📅
-            </div>
+            <div style="font-size:28px;">📅</div>
 
             <div style="
               color:#475569;
@@ -5096,7 +5066,7 @@ function showReceiptList() {
               আজকের রশিদ
             </div>
 
-            <strong style="
+            <strong id="receiptTodayCount" style="
               display:block;
               font-size:24px;
               margin-top:5px;
@@ -5104,75 +5074,76 @@ function showReceiptList() {
             ">
               ০
             </strong>
-
           </div>
 
         </div>
 
 
         <div style="
-          display:flex;
-          flex-wrap:wrap;
-          gap:10px;
-          margin-bottom:20px;
+          overflow-x:auto;
+          border-radius:12px;
+          border:1px solid #e2e8f0;
         ">
 
-          <input
-            type="text"
-            placeholder="🔎 রশিদ নম্বর বা দাতার নাম লিখুন"
-            style="
-              flex:1;
-              min-width:220px;
-              padding:12px 14px;
-              border:1px solid #cbd5e1;
-              border-radius:10px;
-              font-size:14px;
-            "
-          >
-
-          <input
-            type="date"
-            style="
-              padding:12px 14px;
-              border:1px solid #cbd5e1;
-              border-radius:10px;
-              font-size:14px;
-            "
-          >
-
-        </div>
-
-
-        <div style="
-          background:#f8fafc;
-          border:1px dashed #cbd5e1;
-          border-radius:14px;
-          padding:35px 20px;
-          text-align:center;
-          color:#64748b;
-        ">
-
-          <div style="
-            font-size:45px;
-            margin-bottom:10px;
+          <table style="
+            width:100%;
+            min-width:900px;
+            border-collapse:collapse;
+            background:white;
           ">
-            📋
-          </div>
 
-          <strong style="
-            display:block;
-            font-size:18px;
-            color:#334155;
-            margin-bottom:5px;
-          ">
-            রশিদ তালিকা প্রস্তুত হচ্ছে
-          </strong>
+            <thead>
+              <tr style="
+                background:#f1f5f9;
+                color:#334155;
+              ">
 
-          <span style="
-            font-size:14px;
-          ">
-            সংরক্ষিত রশিদগুলো এখানে দেখা যাবে।
-          </span>
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  ক্রম
+                </th>
+
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  রশিদ নং
+                </th>
+
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  তারিখ
+                </th>
+
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  দাতার নাম
+                </th>
+
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  ফান্ড
+                </th>
+
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  পরিমাণ
+                </th>
+
+                <th style="padding:12px;border:1px solid #e2e8f0;">
+                  মাধ্যম
+                </th>
+
+              </tr>
+            </thead>
+
+            <tbody id="receiptListBody">
+
+              <tr>
+                <td colspan="7" style="
+                  padding:30px;
+                  text-align:center;
+                  color:#64748b;
+                ">
+                  ⏳ রশিদগুলো লোড হচ্ছে...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
 
         </div>
 
@@ -5194,8 +5165,243 @@ function showReceiptList() {
       </div>
 
     </div>
-
   `;
+
+
+  try {
+
+    const receipts = await supabaseRequest(
+      "receipts?institution_id=eq." +
+      INSTITUTION_ID +
+      "&order=receipt_date.desc,created_at.desc"
+    );
+
+
+    const body =
+      document.getElementById("receiptListBody");
+
+    const totalCount =
+      document.getElementById("receiptTotalCount");
+
+    const totalAmount =
+      document.getElementById("receiptTotalAmount");
+
+    const todayCount =
+      document.getElementById("receiptTodayCount");
+
+
+    if (!body) {
+      return;
+    }
+
+
+    if (!receipts || receipts.length === 0) {
+
+      body.innerHTML = `
+        <tr>
+          <td colspan="7" style="
+            padding:35px 20px;
+            text-align:center;
+            color:#64748b;
+          ">
+
+            <div style="font-size:45px;">
+              📭
+            </div>
+
+            <strong style="
+              display:block;
+              margin-top:8px;
+              font-size:18px;
+              color:#334155;
+            ">
+              এখনো কোনো রশিদ নেই
+            </strong>
+
+            <div style="
+              margin-top:5px;
+              font-size:14px;
+            ">
+              নতুন রশিদ তৈরি করলে এখানে দেখা যাবে।
+            </div>
+
+          </td>
+        </tr>
+      `;
+
+      if (totalCount) {
+        totalCount.textContent = "০";
+      }
+
+      if (totalAmount) {
+        totalAmount.textContent = "০ টাকা";
+      }
+
+      if (todayCount) {
+        todayCount.textContent = "০";
+      }
+
+      return;
+    }
+
+
+    let total = 0;
+    let today = 0;
+
+    const todayDate =
+      new Date().toISOString().split("T")[0];
+
+
+    let rows = "";
+
+
+    receipts.forEach(function(receipt, index) {
+
+      const amount = Number(receipt.amount) || 0;
+
+      total += amount;
+
+
+      if (receipt.receipt_date === todayDate) {
+        today++;
+      }
+
+
+      rows += `
+        <tr>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+            text-align:center;
+          ">
+            ${index + 1}
+          </td>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+            text-align:center;
+            font-weight:bold;
+          ">
+            ${receipt.receipt_no || "—"}
+          </td>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+            text-align:center;
+          ">
+            ${receipt.receipt_date || "—"}
+          </td>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+            font-weight:bold;
+          ">
+            ${receipt.donor_name || "—"}
+          </td>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+          ">
+            ${receipt.fund_name || "—"}
+          </td>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+            text-align:right;
+            font-weight:bold;
+            color:#15803d;
+          ">
+            ${amount.toLocaleString("bn-BD")} টাকা
+          </td>
+
+          <td style="
+            padding:10px;
+            border:1px solid #e2e8f0;
+            text-align:center;
+          ">
+            ${receipt.payment_method || "—"}
+          </td>
+
+        </tr>
+      `;
+
+    });
+
+
+    body.innerHTML = rows;
+
+
+    if (totalCount) {
+      totalCount.textContent =
+        receipts.length.toLocaleString("bn-BD");
+    }
+
+
+    if (totalAmount) {
+      totalAmount.textContent =
+        total.toLocaleString("bn-BD") + " টাকা";
+    }
+
+
+    if (todayCount) {
+      todayCount.textContent =
+        today.toLocaleString("bn-BD");
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Receipt List Error:",
+      error
+    );
+
+
+    const body =
+      document.getElementById("receiptListBody");
+
+
+    if (body) {
+
+      body.innerHTML = `
+        <tr>
+          <td colspan="7" style="
+            padding:30px;
+            text-align:center;
+            color:#dc2626;
+          ">
+
+            <div style="font-size:40px;">
+              ⚠️
+            </div>
+
+            <strong>
+              রশিদ তালিকা লোড করা যায়নি
+            </strong>
+
+            <div style="
+              margin-top:6px;
+              font-size:13px;
+            ">
+              Supabase থেকে তথ্য আনতে সমস্যা হয়েছে।
+            </div>
+
+          </td>
+        </tr>
+      `;
+
+    }
+
+    toast("রশিদ তালিকা লোড করা যায়নি");
+
+  }
+
 }
 /* =====================================================
    DASHBOARD
