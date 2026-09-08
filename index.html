@@ -3005,7 +3005,619 @@ window.print();
   reportWindow.document.close();
 
 }
+/* =====================================================
+   DUE STUDENT REPORT
+===================================================== */
 
+function printFeeDueReport() {
+
+  if (!feePaymentsData.length) {
+
+    toast(
+      "প্রিন্ট করার মতো কোনো বাকি হিসাব নেই"
+    );
+
+    return;
+
+  }
+
+
+  const studentGroups = {};
+
+
+  feePaymentsData.forEach(
+    function(payment) {
+
+      const student =
+        getFeeStudent(
+          payment.student_id
+        );
+
+
+      const studentId =
+        String(
+          payment.student_id || ""
+        );
+
+
+      if (!studentId) {
+        return;
+      }
+
+
+      const total =
+        Number(
+          payment.fee_amount || 0
+        );
+
+
+      const paid =
+        Number(
+          payment.paid_amount || 0
+        );
+
+
+      const due =
+        Math.max(
+          total - paid,
+          0
+        );
+
+
+      if (due <= 0) {
+        return;
+      }
+
+
+      if (!studentGroups[studentId]) {
+
+        studentGroups[studentId] = {
+
+          student:
+            student,
+
+          total:
+            0,
+
+          paid:
+            0,
+
+          due:
+            0
+
+        };
+
+      }
+
+
+      studentGroups[studentId].total +=
+        total;
+
+
+      studentGroups[studentId].paid +=
+        paid;
+
+
+      studentGroups[studentId].due +=
+        due;
+
+    }
+  );
+
+
+  const dueStudents =
+    Object.values(
+      studentGroups
+    );
+
+
+  if (!dueStudents.length) {
+
+    toast(
+      "কোনো ছাত্রের টাকা বাকি নেই"
+    );
+
+    return;
+
+  }
+
+
+  const reportGroups = {};
+
+
+  dueStudents.forEach(
+    function(item) {
+
+      const student =
+        item.student;
+
+
+      const className =
+        student
+          ? feeGetClass(student)
+          : "";
+
+
+      const department =
+        student
+          ? feeGetDepartment(student)
+          : "";
+
+
+      const classKey =
+        className ||
+        department ||
+        "জামাত নির্ধারিত নয়";
+
+
+      if (!reportGroups[classKey]) {
+
+        reportGroups[classKey] = [];
+
+      }
+
+
+      reportGroups[classKey].push(
+        item
+      );
+
+    }
+  );
+
+
+  let grandDue =
+    0;
+
+
+  let grandPaid =
+    0;
+
+
+  let grandTotal =
+    0;
+
+
+  let serial =
+    1;
+
+
+  let reportHTML =
+    "";
+
+
+  const sortedClasses =
+    Object.keys(
+      reportGroups
+    ).sort(
+      function(a, b) {
+
+        return a.localeCompare(
+          b,
+          "bn"
+        );
+
+      }
+    );
+
+
+  sortedClasses.forEach(
+    function(className) {
+
+      const students =
+        reportGroups[className];
+
+
+      let classTotal =
+        0;
+
+
+      let classPaid =
+        0;
+
+
+      let classDue =
+        0;
+
+
+      let classRows =
+        "";
+
+
+      students.sort(
+        function(a, b) {
+
+          const rollA =
+            a.student
+              ? String(
+                  feeGetRoll(
+                    a.student
+                  )
+                )
+              : "";
+
+
+          const rollB =
+            b.student
+              ? String(
+                  feeGetRoll(
+                    b.student
+                  )
+                )
+              : "";
+
+
+          return rollA.localeCompare(
+            rollB,
+            "bn",
+            {
+              numeric: true
+            }
+          );
+
+        }
+      );
+
+
+      students.forEach(
+        function(item) {
+
+          const student =
+            item.student;
+
+
+          const studentName =
+            student
+              ? feeGetStudentName(
+                  student
+                )
+              : "ছাত্রের তথ্য পাওয়া যায়নি";
+
+
+          const roll =
+            student
+              ? feeGetRoll(
+                  student
+                )
+              : "";
+
+
+          const department =
+            student
+              ? feeGetDepartment(
+                  student
+                )
+              : "";
+
+
+          classTotal +=
+            item.total;
+
+
+          classPaid +=
+            item.paid;
+
+
+          classDue +=
+            item.due;
+
+
+          grandTotal +=
+            item.total;
+
+
+          grandPaid +=
+            item.paid;
+
+
+          grandDue +=
+            item.due;
+
+
+          classRows += `
+
+<tr>
+
+<td>${serial}</td>
+
+<td>${safe(roll)}</td>
+
+<td>${safe(studentName)}</td>
+
+<td>${safe(department)}</td>
+
+<td>${safe(className)}</td>
+
+<td>${item.total}</td>
+
+<td>${item.paid}</td>
+
+<td>${item.due}</td>
+
+</tr>
+
+`;
+
+
+          serial++;
+
+        }
+      );
+
+
+      reportHTML += `
+
+<div class="class-section">
+
+<h3>
+📚 ${safe(className)}
+</h3>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ক্রম</th>
+<th>রোল</th>
+<th>ছাত্রের নাম</th>
+<th>বিভাগ</th>
+<th>জামাত</th>
+<th>মোট ফি</th>
+<th>জমা</th>
+<th>বাকি</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+${classRows}
+
+</tbody>
+
+</table>
+
+<div class="class-total">
+
+<strong>
+${safe(className)}-এর বাকি:
+</strong>
+
+মোট ফি: ${classTotal} টাকা
+&nbsp;&nbsp;|&nbsp;&nbsp;
+জমা: ${classPaid} টাকা
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>বাকি: ${classDue} টাকা</b>
+
+</div>
+
+</div>
+
+`;
+
+    }
+  );
+
+
+  const reportWindow =
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  if (!reportWindow) {
+
+    toast(
+      "Print window খুলতে পারেনি"
+    );
+
+    return;
+
+  }
+
+
+  reportWindow.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>বাকি ছাত্রদের রিপোর্ট</title>
+
+<style>
+
+body{
+font-family:Arial,"Noto Sans Bengali",sans-serif;
+padding:20px;
+color:#111;
+}
+
+.madrasa-header{
+text-align:center;
+margin-bottom:15px;
+}
+
+.madrasa-header h1{
+margin:0;
+font-size:21px;
+line-height:1.5;
+font-weight:bold;
+}
+
+.madrasa-header p{
+margin:3px 0;
+font-size:14px;
+}
+
+h2{
+text-align:center;
+margin:10px 0 20px;
+}
+
+.summary{
+display:flex;
+gap:15px;
+justify-content:center;
+margin:20px 0;
+flex-wrap:wrap;
+}
+
+.box{
+border:1px solid #333;
+padding:12px 20px;
+text-align:center;
+min-width:150px;
+}
+
+.class-section{
+margin-top:25px;
+page-break-inside:avoid;
+}
+
+.class-section h3{
+margin:0 0 10px;
+padding:8px;
+border:1px solid #333;
+text-align:center;
+font-size:18px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-bottom:10px;
+}
+
+th,td{
+border:1px solid #333;
+padding:7px;
+text-align:center;
+font-size:13px;
+}
+
+th{
+font-weight:bold;
+}
+
+.class-total{
+border:1px solid #333;
+padding:10px;
+margin-bottom:20px;
+text-align:right;
+font-size:14px;
+}
+
+@media print{
+
+button{
+display:none;
+}
+
+body{
+padding:0;
+}
+
+.class-section{
+page-break-inside:avoid;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="madrasa-header">
+
+<h1>
+কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
+</h1>
+
+<p>
+কল্যাণপুর, নেপালতলী, গাবতলী, বগুড়া
+</p>
+
+<p>
+প্রতিষ্ঠিত: ১৯৯৬ খ্রিষ্টাব্দ
+</p>
+
+</div>
+
+<h2>
+📋 বাকি ছাত্রদের তালিকা
+</h2>
+
+<div class="summary">
+
+<div class="box">
+
+<b>মোট বাকি ছাত্র</b><br>
+
+${dueStudents.length} জন
+
+</div>
+
+
+<div class="box">
+
+<b>সর্বমোট ফি</b><br>
+
+${grandTotal} টাকা
+
+</div>
+
+
+<div class="box">
+
+<b>সর্বমোট জমা</b><br>
+
+${grandPaid} টাকা
+
+</div>
+
+
+<div class="box">
+
+<b>সর্বমোট বাকি</b><br>
+
+${grandDue} টাকা
+
+</div>
+
+</div>
+
+${reportHTML}
+
+
+<script>
+
+window.onload=function(){
+
+window.print();
+
+};
+
+<\/script>
+
+</body>
+
+</html>
+
+`);
+
+
+  reportWindow.document.close();
+
+}
 
 /* =====================================================
    INITIAL LOAD
