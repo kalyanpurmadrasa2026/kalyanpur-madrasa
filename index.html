@@ -2426,7 +2426,6 @@ function printFeeReport() {
   feePaymentsData.forEach(
     function(item) {
 
-
       const student =
         getFeeStudent(
           item.student_id
@@ -2434,7 +2433,7 @@ function printFeeReport() {
 
 
       let feeType =
-        "unknown";
+        "অজানা ফি";
 
 
       const note =
@@ -2457,7 +2456,7 @@ function printFeeReport() {
       }
 
 
-      const key =
+      const studentKey =
         String(
           item.student_id
         ) +
@@ -2473,9 +2472,9 @@ function printFeeReport() {
         feeType;
 
 
-      if (!groups[key]) {
+      if (!groups[studentKey]) {
 
-        groups[key] = {
+        groups[studentKey] = {
 
           student:
             student,
@@ -2485,6 +2484,9 @@ function printFeeReport() {
 
           year:
             item.year,
+
+          feeType:
+            feeType,
 
           total:
             Number(
@@ -2499,7 +2501,7 @@ function printFeeReport() {
       }
 
 
-      groups[key].paid +=
+      groups[studentKey].paid +=
         Number(
           item.paid_amount || 0
         );
@@ -2513,13 +2515,56 @@ function printFeeReport() {
 
       if (
         currentFee >
-        groups[key].total
+        groups[studentKey].total
       ) {
 
-        groups[key].total =
+        groups[studentKey].total =
           currentFee;
 
       }
+
+    }
+  );
+
+
+  const reportGroups = {};
+
+
+  Object.values(groups).forEach(
+    function(group) {
+
+      const student =
+        group.student;
+
+
+      const department =
+        student
+          ? feeGetDepartment(student)
+          : "";
+
+
+      const className =
+        student
+          ? feeGetClass(student)
+          : "";
+
+
+      const classKey =
+        className ||
+        department ||
+        "জামাত নির্ধারিত নয়";
+
+
+      if (!reportGroups[classKey]) {
+
+        reportGroups[classKey] = [];
+
+      }
+
+
+      reportGroups[classKey].push(
+        group
+      );
 
     }
   );
@@ -2537,49 +2582,159 @@ function printFeeReport() {
     0;
 
 
-  let rows =
+  let serial =
+    1;
+
+
+  let reportHTML =
     "";
 
 
-  Object.values(groups).forEach(
-    function(group,index) {
+  const sortedClasses =
+    Object.keys(reportGroups).sort(
+      function(a, b) {
 
-
-      const studentName =
-        group.student
-          ? feeGetStudentName(
-              group.student
-            )
-          : "অজানা ছাত্র";
-
-
-      const groupDue =
-        Math.max(
-          group.total -
-          group.paid,
-          0
+        return a.localeCompare(
+          b,
+          "bn"
         );
 
-
-      total +=
-        group.total;
-
-
-      paid +=
-        group.paid;
+      }
+    );
 
 
-      due +=
-        groupDue;
+  sortedClasses.forEach(
+    function(className) {
+
+      const classGroups =
+        reportGroups[className];
 
 
-      rows += `
+      let classTotal =
+        0;
+
+
+      let classPaid =
+        0;
+
+
+      let classDue =
+        0;
+
+
+      let classRows =
+        "";
+
+
+      classGroups.sort(
+        function(a, b) {
+
+          const rollA =
+            a.student
+              ? String(
+                  feeGetRoll(a.student)
+                )
+              : "";
+
+
+          const rollB =
+            b.student
+              ? String(
+                  feeGetRoll(b.student)
+                )
+              : "";
+
+
+          return rollA.localeCompare(
+            rollB,
+            "bn",
+            {
+              numeric: true
+            }
+          );
+
+        }
+      );
+
+
+      classGroups.forEach(
+        function(group) {
+
+          const student =
+            group.student;
+
+
+          const studentName =
+            student
+              ? feeGetStudentName(
+                  student
+                )
+              : "অজানা ছাত্র";
+
+
+          const roll =
+            student
+              ? feeGetRoll(
+                  student
+                )
+              : "";
+
+
+          const department =
+            student
+              ? feeGetDepartment(
+                  student
+                )
+              : "";
+
+
+          const groupDue =
+            Math.max(
+              group.total -
+              group.paid,
+              0
+            );
+
+
+          classTotal +=
+            group.total;
+
+
+          classPaid +=
+            group.paid;
+
+
+          classDue +=
+            groupDue;
+
+
+          total +=
+            group.total;
+
+
+          paid +=
+            group.paid;
+
+
+          due +=
+            groupDue;
+
+
+          classRows += `
 
 <tr>
 
-<td>${index + 1}</td>
+<td>${serial}</td>
+
+<td>${safe(roll)}</td>
 
 <td>${safe(studentName)}</td>
+
+<td>${safe(department)}</td>
+
+<td>${safe(className)}</td>
+
+<td>${safe(group.feeType)}</td>
 
 <td>${safe(getMonthName(group.month))}</td>
 
@@ -2592,6 +2747,67 @@ function printFeeReport() {
 <td>${groupDue}</td>
 
 </tr>
+
+`;
+
+
+          serial++;
+
+        }
+      );
+
+
+      reportHTML += `
+
+<div class="class-section">
+
+<h3>📚 ${safe(className)}</h3>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ক্রম</th>
+<th>রোল</th>
+<th>ছাত্রের নাম</th>
+<th>বিভাগ</th>
+<th>জামাত</th>
+<th>ফি-এর ধরন</th>
+<th>মাস</th>
+<th>বছর</th>
+<th>মোট ফি</th>
+<th>জমা</th>
+<th>বাকি</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+${classRows}
+
+</tbody>
+
+</table>
+
+<div class="class-total">
+
+<strong>
+${safe(className)}-এর মোট:
+</strong>
+
+মোট ফি: ${classTotal} টাকা
+&nbsp;&nbsp;|&nbsp;&nbsp;
+জমা: ${classPaid} টাকা
+&nbsp;&nbsp;|&nbsp;&nbsp;
+বাকি: ${classDue} টাকা
+
+</div>
+
+</div>
 
 `;
 
@@ -2616,42 +2832,9 @@ function printFeeReport() {
 body{
 font-family:Arial,"Noto Sans Bengali",sans-serif;
 padding:20px;
+color:#111;
 }
 
-h1,h2{
-text-align:center;
-}
-
-.summary{
-display:flex;
-gap:15px;
-justify-content:center;
-margin:20px 0;
-flex-wrap:wrap;
-}
-
-.box{
-border:1px solid #333;
-padding:12px 20px;
-text-align:center;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,td{
-border:1px solid #333;
-padding:7px;
-text-align:center;
-}
-
-@media print{
-button{
-display:none;
-}
-}
 .madrasa-header{
 text-align:center;
 margin-bottom:15px;
@@ -2668,6 +2851,81 @@ font-weight:bold;
 margin:3px 0;
 font-size:14px;
 }
+
+h2{
+text-align:center;
+margin:10px 0 20px;
+}
+
+.summary{
+display:flex;
+gap:15px;
+justify-content:center;
+margin:20px 0;
+flex-wrap:wrap;
+}
+
+.box{
+border:1px solid #333;
+padding:12px 20px;
+text-align:center;
+min-width:150px;
+}
+
+.class-section{
+margin-top:25px;
+page-break-inside:avoid;
+}
+
+.class-section h3{
+margin:0 0 10px;
+padding:8px;
+border:1px solid #333;
+text-align:center;
+font-size:18px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-bottom:10px;
+}
+
+th,td{
+border:1px solid #333;
+padding:7px;
+text-align:center;
+font-size:13px;
+}
+
+th{
+font-weight:bold;
+}
+
+.class-total{
+border:1px solid #333;
+padding:10px;
+margin-bottom:20px;
+text-align:right;
+font-size:14px;
+}
+
+@media print{
+
+button{
+display:none;
+}
+
+body{
+padding:0;
+}
+
+.class-section{
+page-break-inside:avoid;
+}
+
+}
+
 </style>
 
 </head>
@@ -2676,65 +2934,65 @@ font-size:14px;
 
 <div class="madrasa-header">
 
-<h1>কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা</h1>
+<h1>
+কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
+</h1>
 
-<p>কল্যাণপুর, নেপালতলী, গাবতলী, বগুড়া</p>
+<p>
+কল্যাণপুর, নেপালতলী, গাবতলী, বগুড়া
+</p>
 
-<p>প্রতিষ্ঠিত: ১৯৯৬ খ্রিষ্টাব্দ</p>
+<p>
+প্রতিষ্ঠিত: ১৯৯৬ খ্রিষ্টাব্দ
+</p>
 
 </div>
 
-<h2>বেতন / ফি রিপোর্ট</h2>
+<h2>
+📊 বেতন / ফি রিপোর্ট
+</h2>
 
 <div class="summary">
 
 <div class="box">
+
 <b>মোট ফি</b><br>
+
 ${total} টাকা
+
 </div>
 
+
 <div class="box">
+
 <b>মোট জমা</b><br>
+
 ${paid} টাকা
+
 </div>
+
 
 <div class="box">
+
 <b>মোট বাকি</b><br>
+
 ${due} টাকা
-</div>
 
 </div>
 
-<table>
+</div>
 
-<thead>
+${reportHTML}
 
-<tr>
-
-<th>ক্রম</th>
-<th>ছাত্র</th>
-<th>মাস</th>
-<th>বছর</th>
-<th>মোট</th>
-<th>জমা</th>
-<th>বাকি</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-${rows}
-
-</tbody>
-
-</table>
 
 <script>
+
 window.onload=function(){
+
 window.print();
+
 };
+
 <\/script>
 
 </body>
