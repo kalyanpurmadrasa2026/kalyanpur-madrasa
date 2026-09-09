@@ -7633,6 +7633,377 @@ function escapeReceiptHTML(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+  /* =====================================================
+   ACCOUNT MANAGEMENT
+===================================================== */
+
+function showAccountForm() {
+
+  const result = document.getElementById("accountContent");
+
+  if (!result) {
+    toast("হিসাব ফর্মের জায়গা পাওয়া যায়নি");
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+
+  result.innerHTML = `
+    <div class="card" style="
+      margin-top:20px;
+      border-top:6px solid #2563eb;
+      padding:20px;
+    ">
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+      ">
+
+        <div>
+          <h3 style="margin:0;color:#1e3a8a;">
+            ➕ নতুন হিসাব যোগ করুন
+          </h3>
+
+          <p style="margin:6px 0 0;color:#64748b;">
+            মাদ্রাসার আয় অথবা ব্যয়ের হিসাব সংরক্ষণ করুন।
+          </p>
+        </div>
+
+        <button
+          class="btn"
+          onclick="document.getElementById('accountContent').innerHTML=''">
+          ✖️ বন্ধ করুন
+        </button>
+
+      </div>
+
+      <div class="formgrid" style="margin-top:20px;">
+
+        <div class="field">
+          <label>হিসাবের ধরন *</label>
+
+          <select id="accountTransactionType">
+            <option value="">নির্বাচন করুন</option>
+            <option value="income">💚 আয়</option>
+            <option value="expense">🔴 ব্যয়</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>ফান্ড *</label>
+
+          <select id="accountFundName">
+            <option value="">ফান্ড নির্বাচন করুন</option>
+            <option value="লিল্লাহ ফান্ড">🟢 লিল্লাহ ফান্ড</option>
+            <option value="সাধারণ ফান্ড">🔵 সাধারণ ফান্ড</option>
+            <option value="যাকাত ফান্ড">🟠 যাকাত ফান্ড</option>
+            <option value="ফিতরা ফান্ড">🟣 ফিতরা ফান্ড</option>
+            <option value="অন্যান্য ফান্ড">⚪ অন্যান্য ফান্ড</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>তারিখ *</label>
+
+          <input
+            type="date"
+            id="accountTransactionDate"
+            value="${today}">
+        </div>
+
+        <div class="field">
+          <label>কিসের জন্য / খাত *</label>
+
+          <input
+            type="text"
+            id="accountCategory"
+            placeholder="যেমন: ছাত্র বেতন, খাবার খরচ, দান">
+        </div>
+
+        <div class="field">
+          <label>টাকার পরিমাণ *</label>
+
+          <input
+            type="number"
+            id="accountAmount"
+            min="0"
+            step="0.01"
+            placeholder="টাকার পরিমাণ লিখুন">
+        </div>
+
+        <div class="field">
+          <label>পেমেন্ট পদ্ধতি *</label>
+
+          <select id="accountPaymentMethod">
+            <option value="">নির্বাচন করুন</option>
+            <option value="নগদ">💵 নগদ</option>
+            <option value="বিকাশ">📱 বিকাশ</option>
+            <option value="নগদ মোবাইল">📱 নগদ</option>
+            <option value="ব্যাংক">🏦 ব্যাংক</option>
+            <option value="অন্যান্য">🔹 অন্যান্য</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>দায়িত্বশীল ব্যক্তি *</label>
+
+          <select id="accountResponsiblePerson">
+            <option value="">নির্বাচন করুন</option>
+            <option value="নাজেমে তালিমাত">
+              👤 নাজেমে তালিমাত
+            </option>
+            <option value="হিসাব রক্ষক">
+              👤 হিসাব রক্ষক
+            </option>
+            <option value="অন্যান্য">
+              👤 অন্যান্য
+            </option>
+          </select>
+        </div>
+
+        <div class="field" id="responsibleNameBox" style="display:none;">
+          <label>দায়িত্বশীল ব্যক্তির নাম *</label>
+
+          <input
+            type="text"
+            id="accountResponsibleName"
+            placeholder="ব্যক্তির নাম লিখুন">
+        </div>
+
+      </div>
+
+      <div class="field" style="margin-top:15px;">
+        <label>বিস্তারিত বিবরণ</label>
+
+        <textarea
+          id="accountDescription"
+          rows="4"
+          placeholder="হিসাব সম্পর্কে বিস্তারিত লিখুন..."></textarea>
+      </div>
+
+      <div style="
+        margin-top:20px;
+        padding:15px;
+        border-radius:12px;
+        background:#eff6ff;
+        border:1px solid #bfdbfe;
+      ">
+
+        <strong>💡 গুরুত্বপূর্ণ:</strong>
+
+        <div style="margin-top:6px;color:#475569;">
+          প্রতিটি হিসাবের তথ্য সংরক্ষিত থাকবে, যাতে পরবর্তীতে
+          আয়-ব্যয়, ফান্ডভিত্তিক হিসাব ও রিপোর্ট তৈরি করা যায়।
+        </div>
+
+      </div>
+
+      <div class="actions" style="margin-top:20px;">
+
+        <button
+          class="btn"
+          onclick="saveAccount()">
+          💾 হিসাব সংরক্ষণ
+        </button>
+
+        <button
+          class="btn"
+          onclick="document.getElementById('accountContent').innerHTML=''">
+          ❌ বাতিল
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  const responsibleSelect =
+    document.getElementById("accountResponsiblePerson");
+
+  responsibleSelect.addEventListener("change", function () {
+
+    const box =
+      document.getElementById("responsibleNameBox");
+
+    if (this.value === "অন্যান্য") {
+      box.style.display = "block";
+    } else {
+      box.style.display = "none";
+      document.getElementById("accountResponsibleName").value = "";
+    }
+
+  });
+}
+
+
+/* =====================================================
+   SAVE ACCOUNT
+===================================================== */
+
+async function saveAccount() {
+
+  try {
+
+    const transactionType =
+      document.getElementById("accountTransactionType").value;
+
+    const fundName =
+      document.getElementById("accountFundName").value;
+
+    const transactionDate =
+      document.getElementById("accountTransactionDate").value;
+
+    const category =
+      document.getElementById("accountCategory").value.trim();
+
+    const amount =
+      parseFloat(
+        document.getElementById("accountAmount").value
+      );
+
+    const paymentMethod =
+      document.getElementById("accountPaymentMethod").value;
+
+    const responsiblePerson =
+      document.getElementById("accountResponsiblePerson").value;
+
+    const responsibleName =
+      document.getElementById("accountResponsibleName").value.trim();
+
+    const description =
+      document.getElementById("accountDescription").value.trim();
+
+
+    if (!transactionType) {
+      toast("হিসাবের ধরন নির্বাচন করুন");
+      return;
+    }
+
+    if (!fundName) {
+      toast("ফান্ড নির্বাচন করুন");
+      return;
+    }
+
+    if (!transactionDate) {
+      toast("তারিখ নির্বাচন করুন");
+      return;
+    }
+
+    if (!category) {
+      toast("কিসের জন্য / খাত লিখুন");
+      return;
+    }
+
+    if (!amount || amount <= 0) {
+      toast("সঠিক টাকার পরিমাণ লিখুন");
+      return;
+    }
+
+    if (!paymentMethod) {
+      toast("পেমেন্ট পদ্ধতি নির্বাচন করুন");
+      return;
+    }
+
+    if (!responsiblePerson) {
+      toast("দায়িত্বশীল ব্যক্তি নির্বাচন করুন");
+      return;
+    }
+
+    if (
+      responsiblePerson === "অন্যান্য" &&
+      !responsibleName
+    ) {
+      toast("দায়িত্বশীল ব্যক্তির নাম লিখুন");
+      return;
+    }
+
+
+    const accountData = {
+
+      institution_id: INSTITUTION_ID,
+
+      transaction_type: transactionType,
+
+      category: category,
+
+      description: description,
+
+      amount: amount,
+
+      transaction_date: transactionDate,
+
+      fund_name: fundName,
+
+      payment_method: paymentMethod,
+
+      responsible_person: responsiblePerson,
+
+      responsible_name:
+        responsiblePerson === "অন্যান্য"
+          ? responsibleName
+          : null
+    };
+
+
+    await supabaseRequest(
+      "accounts",
+      {
+        method: "POST",
+        body: accountData
+      }
+    );
+
+
+    toast("✅ হিসাব সফলভাবে সংরক্ষণ হয়েছে");
+
+    document.getElementById("accountContent").innerHTML = `
+      <div class="card" style="
+        margin-top:20px;
+        text-align:center;
+        border-top:6px solid #16a34a;
+        padding:30px;
+      ">
+
+        <div style="font-size:50px;">
+          ✅
+        </div>
+
+        <h3 style="color:#166534;">
+          হিসাব সফলভাবে সংরক্ষণ হয়েছে
+        </h3>
+
+        <p style="color:#64748b;">
+          আপনার হিসাবটি মাদ্রাসার হিসাব ব্যবস্থায় সংরক্ষিত হয়েছে।
+        </p>
+
+        <button
+          class="btn"
+          onclick="showAccountForm()">
+          ➕ আরেকটি হিসাব যোগ করুন
+        </button>
+
+      </div>
+    `;
+
+    if (typeof loadAccountSummary === "function") {
+      loadAccountSummary();
+    }
+
+  } catch (error) {
+
+    console.error("saveAccount error:", error);
+
+    toast(
+      "❌ হিসাব সংরক্ষণ করা যায়নি"
+    );
+
+  }
+
+}
 /* =====================================================
    DASHBOARD
 ===================================================== */
