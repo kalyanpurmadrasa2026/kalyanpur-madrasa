@@ -4142,16 +4142,138 @@ document.addEventListener(
 <div id="receiptContent"></div>
 </section>
 <!-- হিসাব -->
+<!-- হিসাব / আয়-ব্যয় -->
 <section id="accounts" class="panel hidden">
-<h2>💵 আয়-ব্যয় ও হিসাব</h2>
+
+<h2>💵 আয়-ব্যয় ও হিসাব ব্যবস্থাপনা</h2>
+
+<!-- হিসাবের সারসংক্ষেপ -->
 <div class="cards2">
-<div class="info"><h3>💚 মোট আয়</h3><p>মাদ্রাসার সকল আয়ের হিসাব।</p></div>
-<div class="info"><h3>🔴 মোট ব্যয়</h3><p>সকল খরচের হিসাব।</p></div>
-<div class="info"><h3>📈 হিসাব রিপোর্ট</h3><p>মাসিক ও বার্ষিক রিপোর্ট।</p></div>
+
+<div class="info" style="border-top:5px solid #16a34a;">
+<h3>💚 মোট আয়</h3>
+<p id="totalIncome">৳ ০</p>
 </div>
+
+<div class="info" style="border-top:5px solid #dc2626;">
+<h3>🔴 মোট ব্যয়</h3>
+<p id="totalExpense">৳ ০</p>
+</div>
+
+<div class="info" style="border-top:5px solid #2563eb;">
+<h3>💰 বর্তমান ব্যালেন্স</h3>
+<p id="totalBalance">৳ ০</p>
+</div>
+
+</div>
+
+<!-- ফান্ডসমূহ -->
+<div class="card" style="margin-top:20px;">
+
+<h3>🏦 ফান্ডভিত্তিক হিসাব</h3>
+
+<div class="cards2">
+
+<div class="info">
+<h3>🟢 লিল্লাহ ফান্ড</h3>
+<p id="lillahBalance">৳ ০</p>
+</div>
+
+<div class="info">
+<h3>🔵 সাধারণ ফান্ড</h3>
+<p id="generalBalance">৳ ০</p>
+</div>
+
+<div class="info">
+<h3>🟠 যাকাত ফান্ড</h3>
+<p id="zakatBalance">৳ ০</p>
+</div>
+
+<div class="info">
+<h3>🟣 ফিতরা ফান্ড</h3>
+<p id="fitraBalance">৳ ০</p>
+</div>
+
+<div class="info">
+<h3>⚪ অন্যান্য ফান্ড</h3>
+<p id="otherBalance">৳ ০</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- হিসাবের কাজ -->
+<div class="card" style="margin-top:20px;">
+
+<h3>📋 হিসাব ব্যবস্থাপনা</h3>
+
 <div class="actions">
-<button class="btn" onclick="toast('নতুন আয়/ব্যয় যোগ করার ব্যবস্থা')">➕ হিসাব যোগ</button>
+
+<button class="btn" onclick="showAccountForm()">
+➕ হিসাব যোগ
+</button>
+
+<button class="btn" onclick="showIncomeList()">
+📥 সকল আয়
+</button>
+
+<button class="btn" onclick="showExpenseList()">
+📤 সকল ব্যয়
+</button>
+
+<button class="btn" onclick="showAccountReport()">
+📊 হিসাব রিপোর্ট
+</button>
+
+<button class="btn" onclick="showAccountSearch()">
+🔎 হিসাব অনুসন্ধান
+</button>
+
+<button class="btn" onclick="printAccountSummary()">
+🖨️ হিসাব প্রিন্ট
+</button>
+
 </div>
+
+</div>
+
+<!-- রিপোর্ট -->
+<div class="card" style="margin-top:20px;">
+
+<h3>📊 রিপোর্ট</h3>
+
+<div class="cards2">
+
+<div class="info">
+<h3>📅 মাসিক রিপোর্ট</h3>
+<p>মাস অনুযায়ী আয়, ব্যয় ও ফান্ডের হিসাব দেখুন।</p>
+
+<button class="btn"
+onclick="showMonthlyAccountReport()">
+📅 মাসিক রিপোর্ট
+</button>
+
+</div>
+
+<div class="info">
+<h3>📆 বার্ষিক রিপোর্ট</h3>
+<p>বছর অনুযায়ী আয়, ব্যয় ও ফান্ডের হিসাব দেখুন।</p>
+
+<button class="btn"
+onclick="showYearlyAccountReport()">
+📆 বার্ষিক রিপোর্ট
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- হিসাবের ফলাফল এখানে দেখাবে -->
+<div id="accountContent" style="margin-top:20px;"></div>
+
 </section>
 
 <!-- নোটিশ -->
