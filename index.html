@@ -8004,6 +8004,178 @@ async function saveAccount() {
   }
 
 }
+  /* =====================================================
+   ACCOUNT SUMMARY
+===================================================== */
+
+async function loadAccountSummary() {
+
+  try {
+
+    const accounts = await supabaseRequest(
+      "accounts?institution_id=eq." +
+      INSTITUTION_ID +
+      "&order=transaction_date.desc"
+    );
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    let lillahBalance = 0;
+    let generalBalance = 0;
+    let zakatBalance = 0;
+    let fitraBalance = 0;
+    let otherBalance = 0;
+
+
+    accounts.forEach(account => {
+
+      const amount =
+        Number(account.amount) || 0;
+
+      const type =
+        account.transaction_type;
+
+      const fund =
+        account.fund_name;
+
+
+      if (type === "income") {
+
+        totalIncome += amount;
+
+        if (fund === "লিল্লাহ ফান্ড") {
+          lillahBalance += amount;
+        }
+
+        else if (fund === "সাধারণ ফান্ড") {
+          generalBalance += amount;
+        }
+
+        else if (fund === "যাকাত ফান্ড") {
+          zakatBalance += amount;
+        }
+
+        else if (fund === "ফিতরা ফান্ড") {
+          fitraBalance += amount;
+        }
+
+        else if (fund === "অন্যান্য ফান্ড") {
+          otherBalance += amount;
+        }
+
+      }
+
+
+      if (type === "expense") {
+
+        totalExpense += amount;
+
+        if (fund === "লিল্লাহ ফান্ড") {
+          lillahBalance -= amount;
+        }
+
+        else if (fund === "সাধারণ ফান্ড") {
+          generalBalance -= amount;
+        }
+
+        else if (fund === "যাকাত ফান্ড") {
+          zakatBalance -= amount;
+        }
+
+        else if (fund === "ফিতরা ফান্ড") {
+          fitraBalance -= amount;
+        }
+
+        else if (fund === "অন্যান্য ফান্ড") {
+          otherBalance -= amount;
+        }
+
+      }
+
+    });
+
+
+    const totalBalance =
+      totalIncome - totalExpense;
+
+
+    const incomeElement =
+      document.getElementById("totalIncome");
+
+    const expenseElement =
+      document.getElementById("totalExpense");
+
+    const balanceElement =
+      document.getElementById("totalBalance");
+
+    const lillahElement =
+      document.getElementById("lillahBalance");
+
+    const generalElement =
+      document.getElementById("generalBalance");
+
+    const zakatElement =
+      document.getElementById("zakatBalance");
+
+    const fitraElement =
+      document.getElementById("fitraBalance");
+
+    const otherElement =
+      document.getElementById("otherBalance");
+
+
+    if (incomeElement) {
+      incomeElement.textContent =
+        "৳ " + bengaliNumber(totalIncome.toFixed(2));
+    }
+
+    if (expenseElement) {
+      expenseElement.textContent =
+        "৳ " + bengaliNumber(totalExpense.toFixed(2));
+    }
+
+    if (balanceElement) {
+      balanceElement.textContent =
+        "৳ " + bengaliNumber(totalBalance.toFixed(2));
+    }
+
+    if (lillahElement) {
+      lillahElement.textContent =
+        "৳ " + bengaliNumber(lillahBalance.toFixed(2));
+    }
+
+    if (generalElement) {
+      generalElement.textContent =
+        "৳ " + bengaliNumber(generalBalance.toFixed(2));
+    }
+
+    if (zakatElement) {
+      zakatElement.textContent =
+        "৳ " + bengaliNumber(zakatBalance.toFixed(2));
+    }
+
+    if (fitraElement) {
+      fitraElement.textContent =
+        "৳ " + bengaliNumber(fitraBalance.toFixed(2));
+    }
+
+    if (otherElement) {
+      otherElement.textContent =
+        "৳ " + bengaliNumber(otherBalance.toFixed(2));
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Account summary error:",
+      error
+    );
+
+  }
+
+}
 /* =====================================================
    DASHBOARD
 ===================================================== */
