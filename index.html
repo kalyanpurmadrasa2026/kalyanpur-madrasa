@@ -4941,6 +4941,976 @@ function numberToBanglaWords(number) {
 
   return convert(Math.floor(number));
 }
+  /* =====================================================
+   DAILY RECEIPT REPORT
+===================================================== */
+
+async function showDailyReceiptReport() {
+
+  const result = document.getElementById("receiptContent");
+
+  if (!result) {
+    toast("দৈনিক রিপোর্টের জায়গা পাওয়া যায়নি");
+    return;
+  }
+
+  const today =
+    new Date().toISOString().split("T")[0];
+
+  result.innerHTML = `
+    <div class="card" style="
+      margin-top:20px;
+      border-radius:20px;
+      overflow:hidden;
+      border:1px solid #dbeafe;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+    ">
+
+      <div style="
+        background:linear-gradient(135deg,#1d4ed8,#0f766e);
+        color:white;
+        padding:25px 20px;
+        text-align:center;
+      ">
+
+        <div style="
+          font-size:42px;
+          margin-bottom:8px;
+        ">
+          📊
+        </div>
+
+        <h3 style="
+          margin:0;
+          font-size:23px;
+        ">
+          দৈনিক রশিদ রিপোর্ট
+        </h3>
+
+        <p style="
+          margin:8px 0 0;
+          opacity:.9;
+          font-size:14px;
+        ">
+          নির্দিষ্ট দিনের সকল রশিদ ও আদায়ের হিসাব
+        </p>
+
+      </div>
+
+
+      <div style="padding:20px;">
+
+        <div style="
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+          border-radius:15px;
+          padding:16px;
+          margin-bottom:20px;
+        ">
+
+          <label style="
+            display:block;
+            font-weight:700;
+            color:#334155;
+            margin-bottom:8px;
+          ">
+            📅 রিপোর্টের তারিখ নির্বাচন করুন
+          </label>
+
+          <input
+            type="date"
+            id="dailyReceiptReportDate"
+            value="${today}"
+            onchange="loadDailyReceiptReport()"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:13px;
+              border:1px solid #cbd5e1;
+              border-radius:10px;
+              font-size:15px;
+            "
+          >
+
+        </div>
+
+
+        <div
+          id="dailyReceiptReportArea"
+        >
+
+          <div style="
+            padding:30px;
+            text-align:center;
+            color:#64748b;
+          ">
+            ⏳ রিপোর্ট তৈরি হচ্ছে...
+          </div>
+
+        </div>
+
+
+        <div style="
+          margin-top:20px;
+          display:flex;
+          justify-content:center;
+          gap:10px;
+          flex-wrap:wrap;
+        ">
+
+          <button
+            class="btn"
+            onclick="printDailyReceiptReport()"
+          >
+            🖨️ রিপোর্ট প্রিন্ট
+          </button>
+
+          <button
+            class="btn"
+            onclick="showReceiptList()"
+          >
+            ↩️ রশিদ তালিকায় ফিরুন
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  await loadDailyReceiptReport();
+}
+
+
+/* =====================================================
+   LOAD DAILY RECEIPT REPORT
+===================================================== */
+
+async function loadDailyReceiptReport() {
+
+  const dateBox =
+    document.getElementById("dailyReceiptReportDate");
+
+  const area =
+    document.getElementById("dailyReceiptReportArea");
+
+  if (!dateBox || !area) {
+    return;
+  }
+
+  const selectedDate = dateBox.value;
+
+  if (!selectedDate) {
+    toast("তারিখ নির্বাচন করুন");
+    return;
+  }
+
+  area.innerHTML = `
+    <div style="
+      padding:30px;
+      text-align:center;
+      color:#64748b;
+    ">
+      ⏳ রিপোর্ট তৈরি হচ্ছে...
+    </div>
+  `;
+
+
+  try {
+
+    const data = await supabaseRequest(
+      "receipts?institution_id=eq." +
+      INSTITUTION_ID +
+      "&receipt_date=eq." +
+      selectedDate +
+      "&order=created_at.asc"
+    );
+
+
+    const receipts =
+      Array.isArray(data) ? data : [];
+
+
+    const totalCount =
+      receipts.length;
+
+
+    const totalAmount =
+      receipts.reduce(
+        function(sum, item) {
+          return sum + Number(item.amount || 0);
+        },
+        0
+      );
+
+
+    const fundGroups = {};
+
+    receipts.forEach(function(item) {
+
+      const fund =
+        item.fund_name || "অন্যান্য";
+
+      if (!fundGroups[fund]) {
+        fundGroups[fund] = {
+          count:0,
+          amount:0
+        };
+      }
+
+      fundGroups[fund].count += 1;
+      fundGroups[fund].amount +=
+        Number(item.amount || 0);
+
+    });
+
+
+    const paymentGroups = {};
+
+    receipts.forEach(function(item) {
+
+      const method =
+        item.payment_method || "অন্যান্য";
+
+      if (!paymentGroups[method]) {
+        paymentGroups[method] = {
+          count:0,
+          amount:0
+        };
+      }
+
+      paymentGroups[method].count += 1;
+      paymentGroups[method].amount +=
+        Number(item.amount || 0);
+
+    });
+
+
+    let html = `
+
+      <div style="
+        margin-bottom:20px;
+        padding:15px;
+        background:#f0fdf4;
+        border:1px solid #bbf7d0;
+        border-radius:12px;
+        text-align:center;
+      ">
+
+        <strong style="
+          color:#166534;
+          font-size:18px;
+        ">
+          📅 ${formatReceiptDate(selectedDate)}
+        </strong>
+
+      </div>
+
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+        gap:15px;
+        margin-bottom:20px;
+      ">
+
+        <div style="
+          background:#eff6ff;
+          border:1px solid #bfdbfe;
+          border-radius:15px;
+          padding:18px;
+          text-align:center;
+        ">
+
+          <div style="font-size:30px;">
+            🧾
+          </div>
+
+          <div style="
+            color:#64748b;
+            font-size:14px;
+            margin-top:5px;
+          ">
+            মোট রশিদ
+          </div>
+
+          <strong style="
+            display:block;
+            color:#1d4ed8;
+            font-size:25px;
+            margin-top:5px;
+          ">
+            ${toBanglaNumber(totalCount)}
+          </strong>
+
+        </div>
+
+
+        <div style="
+          background:#f0fdf4;
+          border:1px solid #bbf7d0;
+          border-radius:15px;
+          padding:18px;
+          text-align:center;
+        ">
+
+          <div style="font-size:30px;">
+            💰
+          </div>
+
+          <div style="
+            color:#64748b;
+            font-size:14px;
+            margin-top:5px;
+          ">
+            মোট আদায়
+          </div>
+
+          <strong style="
+            display:block;
+            color:#15803d;
+            font-size:25px;
+            margin-top:5px;
+          ">
+            ${formatReceiptMoney(totalAmount)} টাকা
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+        gap:15px;
+        margin-bottom:20px;
+      ">
+
+        <div style="
+          background:white;
+          border:1px solid #ddd6fe;
+          border-radius:15px;
+          overflow:hidden;
+        ">
+
+          <div style="
+            background:#f5f3ff;
+            padding:14px;
+            color:#5b21b6;
+            font-weight:700;
+          ">
+            💰 ফান্ডভিত্তিক হিসাব
+          </div>
+
+          <div style="padding:10px;">
+
+            ${
+              Object.keys(fundGroups).length === 0
+              ? `
+                <div style="
+                  padding:15px;
+                  text-align:center;
+                  color:#64748b;
+                ">
+                  কোনো তথ্য নেই
+                </div>
+              `
+              :
+              Object.keys(fundGroups).map(
+                function(fund) {
+
+                  return `
+                    <div style="
+                      display:flex;
+                      justify-content:space-between;
+                      gap:10px;
+                      padding:11px 5px;
+                      border-bottom:1px solid #f1f5f9;
+                    ">
+
+                      <span>
+                        ${escapeReceiptHTML(fund)}
+                      </span>
+
+                      <strong style="
+                        color:#15803d;
+                      ">
+                        ${formatReceiptMoney(
+                          fundGroups[fund].amount
+                        )}
+                        টাকা
+                      </strong>
+
+                    </div>
+                  `;
+
+                }
+              ).join("")
+            }
+
+          </div>
+
+        </div>
+
+
+        <div style="
+          background:white;
+          border:1px solid #fed7aa;
+          border-radius:15px;
+          overflow:hidden;
+        ">
+
+          <div style="
+            background:#fff7ed;
+            padding:14px;
+            color:#c2410c;
+            font-weight:700;
+          ">
+            💳 পরিশোধের মাধ্যমভিত্তিক হিসাব
+          </div>
+
+          <div style="padding:10px;">
+
+            ${
+              Object.keys(paymentGroups).length === 0
+              ? `
+                <div style="
+                  padding:15px;
+                  text-align:center;
+                  color:#64748b;
+                ">
+                  কোনো তথ্য নেই
+                </div>
+              `
+              :
+              Object.keys(paymentGroups).map(
+                function(method) {
+
+                  return `
+                    <div style="
+                      display:flex;
+                      justify-content:space-between;
+                      gap:10px;
+                      padding:11px 5px;
+                      border-bottom:1px solid #f1f5f9;
+                    ">
+
+                      <span>
+                        ${escapeReceiptHTML(method)}
+                      </span>
+
+                      <strong style="
+                        color:#c2410c;
+                      ">
+                        ${formatReceiptMoney(
+                          paymentGroups[method].amount
+                        )}
+                        টাকা
+                      </strong>
+
+                    </div>
+                  `;
+
+                }
+              ).join("")
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div style="
+        background:white;
+        border:1px solid #e2e8f0;
+        border-radius:15px;
+        overflow:hidden;
+      ">
+
+        <div style="
+          background:#f8fafc;
+          padding:15px;
+          border-bottom:1px solid #e2e8f0;
+          font-weight:700;
+          color:#334155;
+        ">
+          📋 ${formatReceiptDate(selectedDate)}-এর রশিদসমূহ
+        </div>
+
+    `;
+
+
+    if (receipts.length === 0) {
+
+      html += `
+
+        <div style="
+          padding:35px 20px;
+          text-align:center;
+          color:#64748b;
+        ">
+
+          <div style="
+            font-size:45px;
+            margin-bottom:10px;
+          ">
+            📭
+          </div>
+
+          <strong style="
+            display:block;
+            color:#334155;
+            font-size:18px;
+          ">
+            এই তারিখে কোনো রশিদ নেই
+          </strong>
+
+        </div>
+
+      `;
+
+    } else {
+
+      receipts.forEach(
+        function(item, index) {
+
+          html += `
+
+            <div style="
+              padding:15px;
+              border-bottom:1px solid #e2e8f0;
+            ">
+
+              <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:10px;
+                flex-wrap:wrap;
+              ">
+
+                <div>
+
+                  <strong style="
+                    color:#0f172a;
+                    font-size:16px;
+                  ">
+                    ${toBanglaNumber(index + 1)}.
+                    ${escapeReceiptHTML(
+                      item.donor_name || ""
+                    )}
+                  </strong>
+
+                  <div style="
+                    color:#64748b;
+                    font-size:13px;
+                    margin-top:5px;
+                  ">
+                    🧾
+                    ${escapeReceiptHTML(
+                      item.receipt_no || ""
+                    )}
+                    &nbsp; | &nbsp;
+                    ${escapeReceiptHTML(
+                      item.fund_name || ""
+                    )}
+                  </div>
+
+                </div>
+
+
+                <strong style="
+                  color:#15803d;
+                  font-size:17px;
+                ">
+                  ${formatReceiptMoney(
+                    Number(item.amount || 0)
+                  )}
+                  টাকা
+                </strong>
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+      );
+
+    }
+
+
+    html += `
+      </div>
+    `;
+
+
+    area.innerHTML = html;
+
+
+    window.dailyReceiptReportData = {
+      date:selectedDate,
+      receipts:receipts,
+      totalCount:totalCount,
+      totalAmount:totalAmount,
+      fundGroups:fundGroups,
+      paymentGroups:paymentGroups
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "Daily Receipt Report Error:",
+      error
+    );
+
+    area.innerHTML = `
+      <div style="
+        padding:30px;
+        text-align:center;
+        color:#b91c1c;
+      ">
+        ❌ দৈনিক রিপোর্ট তৈরি করা যায়নি।
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* =====================================================
+   PRINT DAILY RECEIPT REPORT
+===================================================== */
+
+function printDailyReceiptReport() {
+
+  const report =
+    window.dailyReceiptReportData;
+
+  if (!report) {
+    toast("প্রথমে রিপোর্ট তৈরি করুন");
+    return;
+  }
+
+
+  const printWindow =
+    window.open(
+      "",
+      "_blank",
+      "width=900,height=900"
+    );
+
+
+  if (!printWindow) {
+    toast("প্রিন্ট উইন্ডো খোলা যায়নি");
+    return;
+  }
+
+
+  let rows = "";
+
+
+  report.receipts.forEach(
+    function(item, index) {
+
+      rows += `
+        <tr>
+
+          <td>
+            ${toBanglaNumber(index + 1)}
+          </td>
+
+          <td>
+            ${escapeReceiptHTML(
+              item.receipt_no || ""
+            )}
+          </td>
+
+          <td>
+            ${escapeReceiptHTML(
+              item.donor_name || ""
+            )}
+          </td>
+
+          <td>
+            ${escapeReceiptHTML(
+              item.fund_name || ""
+            )}
+          </td>
+
+          <td>
+            ${escapeReceiptHTML(
+              item.payment_method || ""
+            )}
+          </td>
+
+          <td>
+            ${formatReceiptMoney(
+              Number(item.amount || 0)
+            )}
+          </td>
+
+        </tr>
+      `;
+
+    }
+  );
+
+
+  printWindow.document.write(`
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>দৈনিক রশিদ রিপোর্ট</title>
+
+<style>
+
+@page {
+  size:A4;
+  margin:12mm;
+}
+
+body {
+  font-family:
+    "Noto Sans Bengali",
+    "SolaimanLipi",
+    Arial,
+    sans-serif;
+  color:#111827;
+}
+
+.header {
+  text-align:center;
+  border-bottom:2px solid #0f766e;
+  padding-bottom:15px;
+  margin-bottom:20px;
+}
+
+.header h1 {
+  margin:0;
+  font-size:24px;
+}
+
+.header p {
+  margin:5px 0;
+  font-size:14px;
+}
+
+.title {
+  font-size:20px;
+  font-weight:bold;
+  margin-top:12px;
+}
+
+.date {
+  text-align:center;
+  margin-bottom:15px;
+  font-size:16px;
+  font-weight:bold;
+}
+
+.summary {
+  display:flex;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.summaryBox {
+  flex:1;
+  border:1px solid #cbd5e1;
+  padding:15px;
+  text-align:center;
+}
+
+.summaryBox strong {
+  display:block;
+  font-size:20px;
+  margin-top:5px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th,
+td {
+  border:1px solid #cbd5e1;
+  padding:7px;
+  text-align:center;
+}
+
+th {
+  background:#f1f5f9;
+}
+
+.total {
+  margin-top:20px;
+  border:2px solid #16a34a;
+  padding:15px;
+  text-align:right;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.signatures {
+  display:flex;
+  justify-content:space-between;
+  margin-top:80px;
+  text-align:center;
+}
+
+.signature {
+  width:30%;
+  border-top:1px solid #111827;
+  padding-top:8px;
+}
+
+.footer {
+  text-align:center;
+  margin-top:30px;
+  font-size:11px;
+  color:#64748b;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+  <h1>
+    কল্যাণপুর এমদাদুল উলুম কওমী হাফিজিয়া ও নূরানী মাদ্রাসা
+  </h1>
+
+  <p>
+    কল্যাণপুর, নেপালতলী, গাবতলী, বগুড়া
+  </p>
+
+  <div class="title">
+    📊 দৈনিক রশিদ রিপোর্ট
+  </div>
+
+</div>
+
+
+<div class="date">
+  📅 ${formatReceiptDate(report.date)}
+</div>
+
+
+<div class="summary">
+
+  <div class="summaryBox">
+    মোট রশিদ
+    <strong>
+      ${toBanglaNumber(report.totalCount)}
+    </strong>
+  </div>
+
+  <div class="summaryBox">
+    মোট আদায়
+    <strong>
+      ${formatReceiptMoney(report.totalAmount)}
+      টাকা
+    </strong>
+  </div>
+
+</div>
+
+
+<table>
+
+<thead>
+
+<tr>
+
+  <th>ক্রমিক</th>
+  <th>রশিদ নম্বর</th>
+  <th>দাতার নাম</th>
+  <th>ফান্ড</th>
+  <th>মাধ্যম</th>
+  <th>পরিমাণ</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+${rows}
+
+</tbody>
+
+</table>
+
+
+<div class="total">
+  সর্বমোট আদায়:
+  ${formatReceiptMoney(report.totalAmount)}
+  টাকা
+</div>
+
+
+<div class="signatures">
+
+  <div class="signature">
+    হিসাব রক্ষক
+  </div>
+
+  <div class="signature">
+    নাজেমে তালিমাত সাহেব
+  </div>
+
+  <div class="signature">
+    মুহতামিম সাহেব
+  </div>
+
+</div>
+
+
+<div class="footer">
+  আল্লাহ তাআলা এই দান কবুল করুন।
+</div>
+
+
+<script>
+
+window.onload = function() {
+
+  setTimeout(
+    function() {
+      window.print();
+    },
+    500
+  );
+
+};
+
+<\/script>
+
+</body>
+
+</html>
+  `);
+
+
+  printWindow.document.close();
+}
  /* =====================================================
    RECEIPT LIST
 ===================================================== */
