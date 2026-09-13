@@ -4337,7 +4337,11 @@ async function supabaseRequest(table, options = {}) {
     "Content-Type": "application/json",
     "Prefer": options.prefer || "return=representation"
   };
-
+console.log("SUPABASE REQUEST:", {
+  table: table,
+  method: options.method || "GET",
+  authorization: headers.Authorization
+});
   const response = await fetch(url, {
     method: options.method || "GET",
     headers: headers,
