@@ -4337,11 +4337,14 @@ async function supabaseRequest(table, options = {}) {
     "Content-Type": "application/json",
     "Prefer": options.prefer || "return=representation"
   };
-console.log("SUPABASE REQUEST:", {
-  table: table,
-  method: options.method || "GET",
-  authorization: headers.Authorization
-});
+console.log("REQUEST TABLE:", table);
+console.log("REQUEST METHOD:", options.method || "GET");
+console.log(
+  "AUTH PREFIX:",
+  headers.Authorization
+    ? headers.Authorization.substring(0, 20)
+    : "NO AUTH"
+);
   const response = await fetch(url, {
     method: options.method || "GET",
     headers: headers,
